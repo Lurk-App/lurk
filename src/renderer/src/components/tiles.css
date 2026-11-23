@@ -1,0 +1,282 @@
+/* Tiles and rows of the list pages (tiles.tsx). Values only through the theme tokens. */
+
+/* MARK: Thumbnail */
+
+.thumb {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--raised);
+  transition: box-shadow var(--hover);
+}
+
+.thumb-video {
+  aspect-ratio: 16 / 9;
+}
+
+.thumb-box-art {
+  aspect-ratio: 3 / 4;
+}
+
+.thumb-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--hover);
+}
+
+.thumb-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--thumb-play);
+  color: var(--thumb-text);
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  transition: opacity var(--hover);
+}
+
+.thumb-play svg {
+  fill: currentColor;
+}
+
+:is(.stream-tile, .video-tile, .category-tile, .channel-live-thumb):hover .thumb {
+  box-shadow: var(--shadow-thumb-hover);
+}
+
+:is(.stream-tile, .video-tile, .category-tile, .channel-live-thumb):hover .thumb-image {
+  transform: scale(var(--thumb-hover-scale));
+}
+
+:is(.stream-tile, .video-tile, .channel-live-thumb):hover .thumb-play {
+  opacity: 1;
+}
+
+/* Badges sit 8 from the picture's edges. */
+.thumb-marks {
+  position: absolute;
+  inset: 8px;
+}
+
+.thumb-mark {
+  position: absolute;
+  display: flex;
+}
+
+.thumb-mark.top-left {
+  top: 0;
+  left: 0;
+}
+
+.thumb-mark.bottom-left {
+  bottom: 0;
+  left: 0;
+}
+
+.thumb-mark.bottom-right {
+  right: 0;
+  bottom: 0;
+}
+
+/* The muted preview: over the still image, under the badges; it fades in once frames arrive. */
+.live-preview {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--fade);
+}
+
+.live-preview.is-showing {
+  opacity: 1;
+}
+
+.live-preview-video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: var(--stage);
+}
+
+/* MARK: Tiles – a button without a card frame */
+
+.stream-tile,
+.video-tile,
+.category-tile,
+.channel-row-main {
+  display: flex;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.stream-tile {
+  flex-direction: column;
+  gap: 10px;
+}
+
+.category-tile {
+  flex-direction: column;
+  gap: 7px;
+}
+
+.video-tile {
+  flex-direction: column;
+  gap: 9px;
+}
+
+.video-tile-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+/* MARK: Progress strip */
+
+.progress-strip {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  background: var(--thumb-track);
+}
+
+.progress-strip-fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+
+.stream-tile-meta {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+}
+
+.stream-tile-text,
+.channel-row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.tile-title {
+  font-size: var(--type-body);
+  font-weight: 600;
+  line-height: var(--tile-line-height);
+}
+
+.tile-title.one-line,
+.tile-line {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Two lines, the space kept even for a short title, so the rows of a grid line up. */
+.tile-title.two-lines {
+  display: -webkit-box;
+  min-height: calc(2em * var(--tile-line-height));
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow-wrap: anywhere;
+}
+
+.tile-line {
+  font-size: var(--type-callout);
+  line-height: var(--tile-line-height);
+}
+
+.tile-line.secondary {
+  color: var(--text-secondary);
+}
+
+.tile-line.tertiary {
+  color: var(--text-tertiary);
+}
+
+/* MARK: Channel row */
+
+.channel-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding-right: 8px;
+  border-radius: var(--radius);
+  transition: background var(--hover);
+}
+
+.channel-row-main {
+  flex: 1;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-radius: var(--radius);
+}
+
+.channel-row:hover {
+  background: var(--field-fill);
+}
+
+.channel-row-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+/* MARK: Grids */
+
+.stream-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--stream-column), 1fr));
+  gap: var(--stream-row-gap) var(--grid-gap);
+  align-items: start;
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--game-column), 1fr));
+  gap: var(--game-row-gap) var(--grid-gap);
+  align-items: start;
+}
+
+.channel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--channel-column), 1fr));
+  gap: var(--channel-row-gap) var(--channel-column-gap);
+  align-items: start;
+}
+
+/* The search's categories: one row that scrolls sideways. */
+.category-strip {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: var(--game-strip-width);
+  gap: var(--grid-gap);
+  align-items: start;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  /* Thin but there: with a wheel mouse (Windows, Linux) it is the way to scroll sideways. */
+  scrollbar-width: thin;
+}

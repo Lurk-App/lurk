@@ -1,0 +1,34 @@
+/* Base for every window. Tokens: theme/tokens.css (fixed) and theme/applyTheme.ts (colours). */
+@import './theme/tokens.css';
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--canvas);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: var(--type-body);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  user-select: none;
+}
+
+input,
+textarea {
+  user-select: text;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}

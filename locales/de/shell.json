@@ -1,0 +1,47 @@
+{
+  "navigation": "Navigation",
+  "nav": {
+    "subscriptions": "Abos",
+    "browse": "Entdecken",
+    "categories": "Kategorien",
+    "history": "Verlauf"
+  },
+  "liveSection": "Live aus deinen Abos",
+  "liveBadge_one": "{{count}} Abo gerade live",
+  "liveBadge_other": "{{count}} Abos gerade live",
+  "settings": "Einstellungen",
+  "toggleSidebar": "Seitenleiste ein/aus",
+  "back": "Zurück",
+  "resizeSidebar": "Breite der Seitenleiste",
+  "search": {
+    "placeholder": "Kanal oder Kategorie suchen",
+    "label": "Suche",
+    "clear": "Suche leeren",
+    "searching": "Suche …",
+    "suggestions": "Vorschläge",
+    "live": "Live",
+    "offline": "Offline",
+    "followers": "{{value}} Follower",
+    "category": "Kategorie",
+    "viewers": "{{value}} Zuschauer",
+    "all": "Alle Ergebnisse für „{{term}}“",
+    "allSubtitle": "Kanäle und Kategorien",
+    "linkChannel": "Kanal „{{login}}“ öffnen",
+    "linkVod": "Video {{id}} abspielen",
+    "linkClip": "Link öffnen",
+    "linkSubtitle": "twitch.tv-Link",
+    "subscribed": "abonniert"
+  },
+  "pages": {
+    "subscriptions": "Abos",
+    "browse": "Entdecken",
+    "categories": "Kategorien",
+    "history": "Verlauf",
+    "clip": "Clip"
+  },
+  "placeholder": {
+    "title": "Noch nicht da",
+    "twitch": "Diese Seite kommt in einer der nächsten Vorschauversionen. Bis dahin kannst du sie auf twitch.tv öffnen.",
+    "openOnTwitch": "Auf twitch.tv öffnen"
+  }
+}

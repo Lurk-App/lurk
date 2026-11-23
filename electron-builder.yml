@@ -1,0 +1,54 @@
+# Packaging for all three systems. Release builds run on GitHub Actions (one runner per system).
+appId: app.lurk.desktop
+productName: Lurk
+copyright: Copyright © Lurk contributors
+directories:
+  output: release
+  buildResources: build
+files:
+  - out/**/*
+  - '!out/**/*.map'
+  - package.json
+asar: true
+
+# Switch off Electron features Lurk never uses, so they cannot be abused (see SECURITY.md).
+electronFuses:
+  runAsNode: false
+  enableCookieEncryption: true
+  enableNodeOptionsEnvironmentVariable: false
+  enableNodeCliInspectArguments: false
+  enableEmbeddedAsarIntegrityValidation: true
+  onlyLoadAppFromAsar: true
+  loadBrowserProcessSpecificV8Snapshot: false
+  grantFileProtocolExtraPrivileges: false
+  # Flipping fuses breaks the signature; without an Apple certificate the Mac build needs a fresh
+  # ad-hoc one, or Apple-silicon Macs refuse to start it.
+  resetAdHocDarwinSignature: true
+
+mac:
+  category: public.app-category.entertainment
+  target:
+    - target: dmg
+      arch: [arm64, x64]
+  # Unsigned until there is a decision about the Apple Developer Program (see the plan).
+  identity: null
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+
+linux:
+  category: AudioVideo
+  executableName: lurk
+  synopsis: Watch Twitch without an account and without tracking
+  maintainer: Lurk contributors
+  # .deb follows once the project has its public home page: Debian packages must name it.
+  target:
+    - target: AppImage
+      arch: [x64]

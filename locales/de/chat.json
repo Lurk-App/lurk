@@ -1,0 +1,18 @@
+{
+  "title": "Chat",
+  "messages": "Nachrichten",
+  "connected": "Verbunden",
+  "connecting": "Verbinde …",
+  "pausedPointer": "Pausiert, solange die Maus darüber ist",
+  "pausedFocus": "Pausiert, solange der Fokus im Chat ist",
+  "readOnly": "Nur lesen · anonym, ohne Konto",
+  "deleted": "Nachricht gelöscht",
+  "hide": "Chat ausblenden ({{shortcut}})",
+  "show": "Chat einblenden ({{shortcut}})",
+  "raidTitle": "{{source}} raidet {{target}}",
+  "raidDetail": "Mit {{viewers}} Zuschauern – Lurk geht mit, sobald der Raid startet",
+  "raidDetailNoViewers": "Lurk geht mit, sobald der Raid startet",
+  "stay": "Hierbleiben",
+  "stayHelp": "Diesen Raid nicht mitgehen",
+  "goNow": "Jetzt mitgehen"
+}

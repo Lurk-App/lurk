@@ -1,0 +1,75 @@
+/* Filter bar and tag search (filters.tsx). The field and its panel follow the sidebar search. */
+
+.filter-bar {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.filter-bar-trailing {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  padding-left: 8px;
+}
+
+.tag-search {
+  position: relative;
+}
+
+/* The tag field is the shared search field (SearchInput), 210 wide. */
+.tag-search .search-input {
+  width: var(--tag-field-width);
+}
+
+/* The shared suggestion panel (SuggestionPanel), placed under the tag field. */
+.tag-panel {
+  top: calc(var(--field-height) + 6px);
+  left: 0;
+  width: var(--tag-field-width);
+}
+
+.tag-option {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 7px;
+  border-radius: var(--radius-row);
+  font-size: var(--type-body);
+  cursor: pointer;
+}
+
+.tag-option.is-highlighted {
+  background: var(--accent-highlight);
+}
+
+.tag-option-text {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* A chosen tag: a capsule in the accent's quiet tint, with × to remove it. */
+.tag-capsule {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: var(--field-height);
+  padding: 0 10px;
+  border-radius: var(--radius-capsule);
+  background: var(--accent-selected);
+  font-size: var(--type-callout);
+}
+
+.tag-capsule-icon {
+  color: var(--accent);
+}
+
+.tag-capsule-text {
+  max-width: var(--tag-field-width);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

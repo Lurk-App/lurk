@@ -1,0 +1,250 @@
+/* The list pages (browse/). Values only through the theme tokens. */
+
+/* A picture beside the page header: a category's box art (aligned at the bottom), a channel's
+   avatar (centred, as the macOS app's channel head). */
+.art-head {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--category-head-gap);
+}
+
+.art-head.is-centered {
+  align-items: center;
+}
+
+.art-head .page-header {
+  flex: 1;
+  min-width: 0;
+}
+
+.art-head.is-centered .page-header {
+  align-items: center;
+  padding-bottom: 0;
+}
+
+.search-empty {
+  margin: 0;
+  font-size: var(--type-body);
+  color: var(--text-secondary);
+}
+
+/* MARK: Channel page */
+
+/* The live and the offline card: surface, radius 14, 14 in. */
+.channel-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 14px;
+  border-radius: var(--radius-banner);
+  background: var(--surface);
+}
+
+.channel-banner.is-offline {
+  flex-direction: column;
+  gap: 4px;
+}
+
+.channel-live-thumb {
+  flex: 1 1 0;
+  max-width: 440px;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.channel-live-text {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 9px;
+  min-width: 0;
+}
+
+.channel-live-title {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  font-size: var(--type-section);
+  font-weight: 600;
+  line-height: var(--tile-line-height);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  user-select: text;
+}
+
+.channel-live-facts {
+  display: flex;
+  gap: 14px;
+  margin: 0;
+  font-size: var(--type-callout);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+}
+
+.channel-live-facts span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.channel-watch {
+  margin-top: 4px;
+}
+
+/* The reference's play.fill. */
+.channel-watch svg {
+  fill: currentColor;
+}
+
+.channel-offline-title {
+  margin: 0;
+  font-size: var(--type-body);
+  font-weight: 600;
+}
+
+.channel-offline-text {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  font-size: var(--type-body);
+  color: var(--text-secondary);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+/* A section title with a control on the right (the channel's videos and their kinds). */
+.section-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 6px;
+}
+
+/* MARK: History */
+
+.history-filter .search-input {
+  width: var(--filter-field-width);
+}
+
+.history-list,
+.history-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.history-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-radius: var(--radius);
+  transition: background var(--hover);
+}
+
+.history-row:hover {
+  background: var(--field-fill);
+}
+
+.history-row-main {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  padding: 6px;
+  border: none;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.history-picture {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 112px;
+  height: 63px;
+  overflow: hidden;
+  border-radius: var(--radius-box-art);
+  background: var(--raised);
+}
+
+.history-picture img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.history-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.history-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--type-caption);
+  color: var(--text-tertiary);
+}
+
+.history-live {
+  color: var(--live);
+  font-size: var(--type-nano);
+  font-weight: 800;
+}
+
+/* "×" shows under the pointer and with keyboard focus in the row. */
+.history-remove {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin-right: 6px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--text-secondary);
+  opacity: 0;
+  cursor: pointer;
+}
+
+.history-row:hover .history-remove,
+.history-row:focus-within .history-remove {
+  opacity: 1;
+}
+
+.history-remove:hover {
+  background: var(--quiet-fill);
+}
+
+/* MARK: Abos */
+
+/* A warning above a list (the macOS app's orange label). */
+.warning-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: var(--type-body);
+  color: var(--warning);
+}
+
+/* A section title with more room above (the macOS app's padding 10 over its own 6): the Abos page's
+   "Offline", the history's days. */
+.section-head {
+  padding-top: 10px;
+}

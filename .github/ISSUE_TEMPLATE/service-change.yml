@@ -1,0 +1,35 @@
+name: A service changed something
+description: Twitch, Kick or YouTube changed something and Lurk broke (no picture, empty chat, ads come through …).
+labels: [service-change]
+body:
+  - type: dropdown
+    id: service
+    attributes:
+      label: Service
+      options: [Twitch, Kick, YouTube]
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What stopped working?
+    validations:
+      required: true
+  - type: input
+    id: when
+    attributes:
+      label: When did you notice it?
+      description: Date and time with time zone – these changes are often short-lived.
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: Channel and country
+      description: Which channel, and roughly where you are (services behave differently by region).
+  - type: input
+    id: version
+    attributes:
+      label: Lurk version and system
+    validations:
+      required: true

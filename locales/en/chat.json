@@ -1,0 +1,18 @@
+{
+  "title": "Chat",
+  "messages": "Messages",
+  "connected": "Connected",
+  "connecting": "Connecting …",
+  "pausedPointer": "Paused while the pointer is over it",
+  "pausedFocus": "Paused while focus is in the chat",
+  "readOnly": "Read only · anonymous, no account",
+  "deleted": "Message deleted",
+  "hide": "Hide chat ({{shortcut}})",
+  "show": "Show chat ({{shortcut}})",
+  "raidTitle": "{{source}} is raiding {{target}}",
+  "raidDetail": "With {{viewers}} viewers – Lurk goes along when the raid starts",
+  "raidDetailNoViewers": "Lurk goes along when the raid starts",
+  "stay": "Stay here",
+  "stayHelp": "Do not go along with this raid",
+  "goNow": "Go now"
+}

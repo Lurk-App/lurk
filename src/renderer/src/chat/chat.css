@@ -1,0 +1,128 @@
+/* The chat panel (ChatPanel.tsx). Values through the theme tokens. */
+
+.chat-panel {
+  display: flex;
+  flex-direction: column;
+  width: var(--chat-width);
+  flex: none;
+  min-height: 0;
+  background: var(--surface);
+  border-left: 1px solid var(--hairline);
+  color: var(--text);
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.chat-title {
+  font-size: var(--type-body);
+  font-weight: 600;
+}
+
+.chat-channel {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--type-callout);
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chat-status {
+  display: grid;
+  place-items: center;
+}
+
+.chat-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--online);
+}
+
+.chat-scroll {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.chat-list {
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  user-select: text;
+}
+
+.chat-row {
+  margin: 0;
+  font-size: var(--type-body);
+  /* 13 px with 2 px line spacing, as the reference (the font's own line height plus 2). */
+  line-height: calc(1.2em + 2px);
+  overflow-wrap: anywhere;
+}
+
+.chat-row.is-system {
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+.chat-name {
+  font-weight: 700;
+}
+
+.chat-deleted {
+  font-style: italic;
+  color: var(--text-tertiary);
+}
+
+.chat-emote {
+  height: 24px;
+  width: auto;
+  /* The reference's baseline offset −7. */
+  vertical-align: -7px;
+}
+
+.chat-emote.is-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.chat-paused {
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: var(--radius-capsule);
+  background: var(--raised);
+  font-size: var(--type-caption);
+  white-space: nowrap;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.chat-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 9px;
+  border-top: 1px solid var(--hairline);
+  font-size: var(--type-caption);
+  color: var(--text-tertiary);
+}

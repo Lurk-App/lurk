@@ -1,0 +1,15 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      # Tooling moves together; Electron and hls.js get their own pull requests (they change playback).
+      tooling:
+        patterns: ['*']
+        exclude-patterns: ['electron', 'hls.js']
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

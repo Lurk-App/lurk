@@ -1,0 +1,463 @@
+/* The player (PlayerPage.tsx). The stage is always dark (`.dark-scope`); values through tokens. */
+
+/* Player and chat side by side. */
+.player-layout {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+}
+
+.player-page {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--stage);
+}
+
+.stage {
+  position: relative;
+  flex: 1;
+  min-height: 240px;
+  overflow: hidden;
+  background: var(--stage);
+}
+
+.stage-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: var(--stage);
+  visibility: hidden;
+}
+
+.stage-video.is-visible {
+  visibility: visible;
+}
+
+/* Lurk's bar does fullscreen; the browser's own button would only be a greyed-out leftover. */
+.stage-video::-webkit-media-controls-fullscreen-button {
+  display: none;
+}
+
+/* The stage message: a .message-area over the whole stage. */
+.stage-center {
+  position: absolute;
+  inset: 0;
+}
+
+/* MARK: Bar */
+
+.control-bar {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px;
+  border-radius: var(--radius-capsule);
+  background: var(--stage-bar);
+  backdrop-filter: blur(var(--stage-bar-blur));
+  /* The border lies inside the capsule (40 px high, as the reference's strokeBorder). */
+  box-shadow:
+    inset 0 0 0 1px var(--stage-border),
+    var(--shadow-bar);
+  color: var(--stage-text);
+}
+
+.bar-icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--stage-text);
+  cursor: pointer;
+  transition: background var(--hover);
+}
+
+.bar-icon:hover {
+  background: var(--stage-hover);
+}
+
+.bar-icon.is-on {
+  background: var(--stage-on);
+  color: var(--accent);
+}
+
+.bar-icon.is-on:hover {
+  background: var(--stage-hover);
+}
+
+.bar-text-button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 10px;
+  border: none;
+  border-radius: var(--radius-capsule);
+  background: transparent;
+  color: var(--stage-text);
+  font-size: var(--type-callout);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--hover);
+}
+
+.bar-text-button:hover {
+  background: var(--stage-hover);
+}
+
+.bar-text-button:disabled {
+  opacity: var(--stage-disabled-opacity);
+  cursor: default;
+}
+
+.bar-divider {
+  width: 1px;
+  height: 18px;
+  margin: 0 3px;
+  background: var(--stage-divider);
+}
+
+/* MARK: The ad blocker's shield and its popover (the reference's BlockerButton and BlockerPopover) */
+
+.blocker-shield {
+  position: relative;
+}
+
+.shield-on {
+  color: var(--accent);
+}
+
+.shield-off {
+  color: var(--text-tertiary);
+}
+
+/* This stream's skipped breaks, top right on the shield. */
+.shield-count {
+  position: absolute;
+  top: -1px;
+  right: -2px;
+  padding: 1px 4px;
+  border-radius: var(--radius-capsule);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: var(--type-nano);
+  font-weight: 700;
+  line-height: normal;
+  font-variant-numeric: tabular-nums;
+}
+
+.blocker-popover {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 340px;
+  padding: 16px;
+}
+
+.blocker-popover-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.blocker-popover-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.blocker-popover-title {
+  font-size: var(--type-body);
+  font-weight: 700;
+}
+
+.blocker-popover-detail {
+  font-size: var(--type-caption);
+  color: var(--text-secondary);
+}
+
+.blocker-popover-line {
+  margin: 0;
+  border: none;
+  border-top: 1px solid var(--hairline);
+}
+
+/* 18 between the columns, 6 between the rows; the outer spacing is taken back. */
+.blocker-popover-table {
+  margin: -6px -18px;
+  border-collapse: separate;
+  border-spacing: 18px 6px;
+  font-size: var(--type-callout);
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+}
+
+.blocker-popover-table th {
+  font-weight: 400;
+}
+
+.blocker-popover-table thead th {
+  font-size: var(--type-caption);
+  font-weight: 600;
+  color: var(--text-tertiary);
+}
+
+.blocker-popover-table .is-none {
+  color: var(--text-tertiary);
+}
+
+.blocker-popover-note {
+  margin: 0;
+  font-size: var(--type-caption);
+  color: var(--text-tertiary);
+}
+
+.blocker-popover-link {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 6px;
+}
+
+/* MARK: Badges and banners */
+
+.status-badges {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  right: 14px;
+  display: flex;
+  pointer-events: none;
+}
+
+.channel-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 5px 17px 5px 5px;
+  border-radius: var(--radius-capsule);
+  background: var(--stage-pill);
+}
+
+.channel-badge-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.channel-badge-name {
+  font-size: var(--type-badge);
+  font-weight: 600;
+}
+
+.channel-badge-title {
+  font-size: var(--type-callout);
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.banners {
+  position: absolute;
+  right: 16px;
+  align-items: flex-start;
+  left: 16px;
+  bottom: 74px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.banner {
+  background: var(--banner-fill);
+  box-shadow: var(--shadow-banner);
+}
+
+.banner-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  /* As the reference: the content is at most 460 wide, the padding comes on top. */
+  max-width: calc(460px + 28px);
+  padding: 10px 14px;
+}
+
+.banner-icon {
+  flex: none;
+  color: var(--accent);
+}
+
+.banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.banner-title {
+  font-size: var(--type-body);
+  font-weight: 600;
+}
+
+.banner-detail {
+  display: flex;
+  /* The space between the text and the time left (a leading space would vanish in flex). */
+  column-gap: 0.3em;
+  min-width: 0;
+  font-size: var(--type-callout);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* Cut in the middle, as the reference does: the text gives way, the time left stays. */
+.banner-detail-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.banner-detail-time {
+  flex: none;
+}
+
+/* MARK: Ad breaks (the dimmed preview, the toast), offline */
+
+/* The toast: bottom centre of the stage, as high as the banners. */
+.stage-toast {
+  position: absolute;
+  right: 0;
+  bottom: 74px;
+  left: 0;
+}
+
+.ad-backdrop {
+  position: absolute;
+  inset: 0;
+  /* Black under the dim, as the reference empties its player: no paused frame shows through. */
+  background: var(--stage);
+  display: grid;
+  place-items: center;
+}
+
+.ad-backdrop img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.ad-dim {
+  position: absolute;
+  inset: 0;
+  background: var(--stage-dim);
+}
+
+.ad-backdrop .spinner {
+  position: relative;
+}
+
+.offline-title {
+  margin: 0;
+  font-size: var(--type-section);
+  font-weight: 600;
+}
+
+.offline-text {
+  max-width: 480px;
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: var(--line-height-text);
+}
+
+/* MARK: Info strip */
+
+.info-strip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  background: var(--surface);
+  border-top: 1px solid var(--hairline);
+  color: var(--text);
+}
+
+.info-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+/* At the strip's end, 8 or more after the text (the reference's Spacer(minLength: 8)). */
+.info-actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+  padding-left: 8px;
+}
+
+.info-title {
+  margin: 0;
+  font-size: var(--type-strip-title);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  user-select: text;
+}
+
+.info-line {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0;
+  font-size: var(--type-callout);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.info-dot {
+  color: var(--text-tertiary);
+}
+
+.info-details {
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Banners with buttons (the raid, the ad-break switch) have no width limit of their own and let
+   their text wrap, as the reference's do. */
+.banner-content.action-banner {
+  max-width: none;
+}
+
+.action-banner .banner-detail {
+  white-space: normal;
+}
+
+/* Buttons in a banner take clicks (the banner stack itself lets them through). */
+.action-banner .button {
+  pointer-events: auto;
+  flex: none;
+}

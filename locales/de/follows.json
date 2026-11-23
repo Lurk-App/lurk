@@ -1,0 +1,38 @@
+{
+  "title": "Twitch-Follows übernehmen",
+  "intro": "Du meldest dich in deinem Browser bei Twitch an und bestätigst dort Lurk. Lurk liest nur, wem du folgst, abonniert diese Kanäle und meldet sich danach sofort wieder ab – dein Passwort sieht Lurk nie.",
+  "preparing": "Bereite die Anmeldung vor …",
+  "code": {
+    "title": "Bestätige Lurk bei Twitch",
+    "text": "Öffne Twitch in deinem Browser, melde dich an und prüfe, dass dort dieser Code steht. Lurk fragt nur, wem du folgst – zeigt Twitch andere Berechtigungen, brich ab.",
+    "label": "Dein Code:",
+    "open": "Twitch im Browser öffnen",
+    "copy": "Code kopieren",
+    "waiting_one": "Wartet auf deine Bestätigung … Der Code gilt {{count}} Minute.",
+    "waiting_other": "Wartet auf deine Bestätigung … Der Code gilt {{count}} Minuten."
+  },
+  "reading": "Lese deine Follows …",
+  "readingCount": "Lese deine Follows … {{number}}",
+  "confirm": {
+    "title": "Follows von @{{login}} übernehmen?",
+    "text_one": "Twitch hat 1 Kanal geliefert. Die Anmeldung bei Twitch ist schon beendet.",
+    "text_other": "Twitch hat {{number}} Kanäle geliefert. Die Anmeldung bei Twitch ist schon beendet.",
+    "accept": "Übernehmen",
+    "cancel": "Abbrechen"
+  },
+  "done": {
+    "title_one": "1 Kanal übernommen",
+    "title_other": "{{number}} Kanäle übernommen",
+    "known": "{{number}} davon hattest du schon abonniert. Die Anmeldung bei Twitch ist vergessen.",
+    "forgotten": "Die Anmeldung bei Twitch ist vergessen.",
+    "finish": "Fertig"
+  },
+  "failed": {
+    "title": "Follows nicht übernommen",
+    "empty": "Twitch hat keine Follows geliefert. Folgst du schon Kanälen?",
+    "expired": "Der Code ist abgelaufen.",
+    "denied": "Die Anmeldung wurde bei Twitch abgelehnt.",
+    "failed": "Übernehmen fehlgeschlagen. Versuche es noch einmal.",
+    "retry": "Erneut versuchen"
+  }
+}

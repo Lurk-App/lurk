@@ -1,0 +1,38 @@
+{
+  "title": "Import Twitch Follows",
+  "intro": "You sign in to Twitch in your browser and approve Lurk there. Lurk only reads whom you follow, subscribes to those channels and signs out again right away – Lurk never sees your password.",
+  "preparing": "Preparing the sign-in …",
+  "code": {
+    "title": "Approve Lurk on Twitch",
+    "text": "Open Twitch in your browser, sign in and check that it shows this code. Lurk only asks whom you follow – if Twitch shows other permissions, cancel.",
+    "label": "Your code:",
+    "open": "Open Twitch in Browser",
+    "copy": "Copy Code",
+    "waiting_one": "Waiting for your approval … The code is valid for {{count}} minute.",
+    "waiting_other": "Waiting for your approval … The code is valid for {{count}} minutes."
+  },
+  "reading": "Reading your follows …",
+  "readingCount": "Reading your follows … {{number}}",
+  "confirm": {
+    "title": "Import the follows of @{{login}}?",
+    "text_one": "Twitch returned 1 channel. The sign-in at Twitch has already ended.",
+    "text_other": "Twitch returned {{number}} channels. The sign-in at Twitch has already ended.",
+    "accept": "Import",
+    "cancel": "Cancel"
+  },
+  "done": {
+    "title_one": "1 channel imported",
+    "title_other": "{{number}} channels imported",
+    "known": "You were already subscribed to {{number}} of them. The sign-in at Twitch is forgotten.",
+    "forgotten": "The sign-in at Twitch is forgotten.",
+    "finish": "Done"
+  },
+  "failed": {
+    "title": "Follows not imported",
+    "empty": "Twitch returned no follows. Do you follow any channels yet?",
+    "expired": "The code has expired.",
+    "denied": "The sign-in was declined on Twitch.",
+    "failed": "Import failed. Please try again.",
+    "retry": "Try Again"
+  }
+}

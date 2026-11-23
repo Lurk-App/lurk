@@ -1,0 +1,150 @@
+{
+  "untitled": "Ohne Titel",
+  "uptime": "Seit {{value}} live",
+  "refresh": "Aktualisieren ({{shortcut}})",
+  "menu": {
+    "watch": "Ansehen",
+    "openChannel": "Kanal öffnen",
+    "openCategory": "Kategorie „{{name}}“ öffnen"
+  },
+  "content": {
+    "label": "Inhalt",
+    "help": "Nach Art des Inhalts filtern",
+    "all": "Alle",
+    "games": "Spiele",
+    "irl": "IRL",
+    "music": "Musik",
+    "creative": "Kreativ",
+    "esports": "E-Sport"
+  },
+  "contentStreams": {
+    "all": "Live-Streams",
+    "games": "Spiele-Streams",
+    "irl": "IRL-Streams",
+    "music": "Musik-Streams",
+    "creative": "Kreativ-Streams",
+    "esports": "E-Sport-Streams"
+  },
+  "sort": {
+    "label": "Sortierung",
+    "help": "Sortieren",
+    "VIEWER_COUNT": "Viele Zuschauer",
+    "VIEWER_COUNT_ASC": "Wenige Zuschauer",
+    "RECENT": "Neu gestartet"
+  },
+  "language": {
+    "label": "Sprache",
+    "help": "Streams nach Sprache filtern",
+    "all": "Alle Sprachen",
+    "DE": "Deutsch",
+    "EN": "Englisch",
+    "ES": "Spanisch",
+    "FR": "Französisch",
+    "IT": "Italienisch",
+    "PT": "Portugiesisch",
+    "NL": "Niederländisch",
+    "PL": "Polnisch",
+    "TR": "Türkisch",
+    "RU": "Russisch",
+    "JA": "Japanisch",
+    "KO": "Koreanisch"
+  },
+  "tag": {
+    "label": "Tag-Filter",
+    "placeholder": "Tag suchen, z. B. Deutsch",
+    "remove": "Tag-Filter entfernen",
+    "removeNamed": "Tag-Filter „{{tag}}“ entfernen",
+    "clear": "Eingabe leeren",
+    "searching": "Suche Tags …",
+    "suggestions": "Tag-Vorschläge"
+  },
+  "streams": {
+    "emptyTitle": "Niemand live",
+    "emptyText": "Für diese Auswahl gibt es gerade keine Streams."
+  },
+  "categories": {
+    "allTopics": "Spiele und Themen",
+    "emptyText": "Keine Kategorie passt zu dieser Auswahl."
+  },
+  "search": {
+    "title": "„{{term}}“",
+    "channels_one": "{{count, number}} Kanal",
+    "channels_other": "{{count, number}} Kanäle",
+    "categories_one": "{{count, number}} Kategorie",
+    "categories_other": "{{count, number}} Kategorien",
+    "categoriesSection": "Kategorien",
+    "channelsSection": "Kanäle",
+    "noChannels": "Keine Kanäle zu „{{term}}“ gefunden.",
+    "failedTitle": "Suche fehlgeschlagen",
+    "live": "Live",
+    "offline": "Offline",
+    "followers": "{{value}} Follower"
+  },
+  "video": {
+    "length": "Länge {{value}}"
+  },
+  "channel": {
+    "notFound": "Kanal nicht gefunden",
+    "notFoundText": "Es gibt keinen Kanal „{{login}}“.",
+    "live": "live",
+    "liveLabel": "Gerade live",
+    "watchNow": "Jetzt ansehen",
+    "offline": "Offline · zuletzt live {{when}}",
+    "videos": "Videos",
+    "kindLabel": "Inhalte des Kanals",
+    "kind": {
+      "ARCHIVE": "Vergangene Übertragungen",
+      "HIGHLIGHT": "Highlights",
+      "UPLOAD": "Uploads"
+    },
+    "empty": {
+      "ARCHIVE": "Keine vergangenen Übertragungen",
+      "HIGHLIGHT": "Keine Highlights",
+      "UPLOAD": "Keine Uploads"
+    },
+    "emptyText": "Twitch hebt Übertragungen nur einige Tage bis Wochen auf, und manche Kanäle speichern sie gar nicht."
+  },
+  "history": {
+    "kept": "Nur auf diesem Computer gespeichert",
+    "off": "Ausgeschaltet – neue Wiedergaben werden nicht gespeichert",
+    "filter": "Verlauf filtern",
+    "clearFilter": "Filter leeren",
+    "clear": "Verlauf löschen …",
+    "emptyTitle": "Noch kein Verlauf",
+    "emptyText": "Angesehene Streams und Videos erscheinen hier.",
+    "emptyOff": "Du kannst den Verlauf in den Einstellungen wieder einschalten.",
+    "noMatch": "Nichts gefunden für „{{filter}}“.",
+    "today": "Heute",
+    "yesterday": "Gestern",
+    "remove": "Aus dem Verlauf entfernen",
+    "removeNamed": "„{{title}}“ aus dem Verlauf entfernen"
+  },
+  "subscribe": {
+    "action": "Abonnieren",
+    "done": "Abonniert",
+    "end": "Abo beenden",
+    "help": "Lokal abonnieren – kein Konto nötig"
+  },
+  "subs": {
+    "kept": "Nur auf diesem Computer gespeichert – ohne Konto",
+    "someLive_one": "{{live}} von {{total}} Kanal live",
+    "someLive_other": "{{live}} von {{total}} Kanälen live",
+    "noneLive_one": "{{total}} Kanal · gerade niemand live",
+    "noneLive_other": "{{total}} Kanäle · gerade niemand live",
+    "transfer": "Import/Export",
+    "transferHelp": "Abos importieren oder exportieren",
+    "fromTwitch": "Von Twitch übernehmen …",
+    "import": "Abos importieren …",
+    "exportJson": "Als JSON exportieren …",
+    "exportText": "Als Textliste exportieren …",
+    "refresh": "Live-Status aktualisieren ({{shortcut}})",
+    "failed": "Live-Status konnte nicht geladen werden. Lurk versucht es in zwei Minuten wieder.",
+    "loading": "Lade Live-Status …",
+    "nobodyLive": "Gerade ist keiner deiner Kanäle live.",
+    "offline": "Offline",
+    "lastLive": "Zuletzt live {{when}}",
+    "emptyTitle": "Noch keine Abos",
+    "emptyText": "Abonniere Kanäle mit „Abonnieren“ – ganz ohne Konto. Oder suche oben links nach deinen Lieblingskanälen.",
+    "discover": "Streams entdecken"
+  }
+}

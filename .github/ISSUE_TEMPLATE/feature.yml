@@ -1,0 +1,19 @@
+name: Feature request
+description: An idea for something Lurk could do.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: What do you want to do?
+      description: Describe the situation and what is hard or impossible today – the "why" helps more than a finished solution.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: How could Lurk help?
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What do you do today instead?

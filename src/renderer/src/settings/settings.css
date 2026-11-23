@@ -1,0 +1,350 @@
+/* The settings window (SettingsApp.tsx): tabs on top, grouped forms. Values only through tokens. */
+
+.settings-window {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--canvas);
+}
+
+.settings-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.settings-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 72px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: var(--radius-row);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--type-caption);
+  cursor: pointer;
+  transition:
+    background var(--hover),
+    color var(--hover);
+}
+
+.settings-tab:hover {
+  background: var(--field-fill);
+}
+
+.settings-tab.is-selected {
+  background: var(--accent-selected);
+  color: var(--accent);
+}
+
+.settings-tab.is-selected span {
+  color: var(--text);
+}
+
+.settings-panel {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* MARK: Grouped form */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 18px 20px 24px;
+}
+
+.form-section-title {
+  margin: 0 0 6px 10px;
+  font-size: var(--type-body);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.form-group {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+}
+
+.form-row + .form-row {
+  border-top: 1px solid var(--hairline);
+}
+
+.form-row.column {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.form-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* A section without entries yet (the blocker's log, the ranking by watch time). */
+.form-empty {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.form-note {
+  margin: 0;
+  font-size: var(--type-caption);
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+/* MARK: Segmented control */
+
+/* MARK: Accent swatches */
+
+.swatches {
+  display: flex;
+  gap: 10px;
+  padding: 4px;
+}
+
+.swatch {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--swatch);
+  color: var(--on-accent);
+  cursor: pointer;
+}
+
+.swatch.is-selected::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border: 2px solid color-mix(in srgb, var(--text) 90%, transparent);
+  border-radius: 50%;
+}
+
+.color-input {
+  width: 44px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-control);
+  background: var(--field-fill);
+  cursor: pointer;
+}
+
+/* MARK: Tones */
+
+.tones {
+  display: flex;
+  gap: 14px;
+}
+
+.tone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.tone-preview {
+  position: relative;
+  display: flex;
+  width: 112px;
+  height: 40px;
+  overflow: hidden;
+  border-radius: var(--radius-row);
+}
+
+/* The border lies inside the preview, as the reference's strokeBorder does. */
+.tone-preview::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--hairline);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.tone.is-selected .tone-preview::after {
+  border: 2px solid var(--accent);
+}
+
+.tone-half {
+  position: relative;
+  width: 56px;
+  height: 40px;
+}
+
+.tone-block {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 30px;
+  height: 18px;
+  border-radius: var(--radius-thumb);
+}
+
+.tone-name {
+  font-size: var(--type-caption);
+  color: var(--text-secondary);
+}
+
+.tone.is-selected .tone-name {
+  color: var(--text);
+}
+
+/* MARK: Werbeblocker (BlockerSettings.tsx) */
+
+/* A label with its value on the right (the reference's LabeledContent). */
+.form-value {
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.form-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.form-message {
+  margin: 0;
+  font-size: var(--type-callout);
+}
+
+.form-disclosure summary {
+  cursor: pointer;
+}
+
+.filter-list {
+  margin: 8px 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--type-caption);
+  line-height: 1.4;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+
+/* The own filters: a field over the form's width, in the monospaced font. */
+.filter-editor {
+  width: 100%;
+  height: 120px;
+  padding: 6px 9px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-row);
+  background: var(--field-fill);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--type-body);
+  resize: none;
+  transition: border-color var(--hover);
+}
+
+.filter-editor:focus {
+  border-color: var(--accent-focus);
+  outline: none;
+}
+
+.filter-issue {
+  align-items: flex-start;
+}
+
+/* As the reference's HStack: symbol and time centred against both lines, 10 apart. */
+.log-row {
+  gap: 10px;
+}
+
+.filter-issue-icon,
+.log-icon {
+  flex: none;
+  color: var(--text-secondary);
+}
+
+.filter-issue-icon {
+  margin-top: 2px;
+}
+
+.log-icon {
+  width: 22px;
+}
+
+.log-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+/* One line each; the text is shortened in the middle, an end still too wide gets an ellipsis. */
+.log-row .log-text > span,
+.log-rule {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.log-rule {
+  font-family: var(--font-mono);
+  font-size: var(--type-caption);
+  color: var(--text-secondary);
+}
+
+.log-time {
+  flex: none;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* A row another setting rules out: its label dims with the switch. */
+.form-row.is-disabled label {
+  color: var(--text-tertiary);
+}
+
+/* MARK: Replay & Werbung (ReplaySettings.tsx) */
+
+/* One ranked subscription: the place, its avatar, the name, the watch time (the reference's HStack,
+   10 apart). */
+.ranking-row {
+  gap: 10px;
+}
+
+.ranking-place {
+  flex: none;
+  width: 22px;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.ranking-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

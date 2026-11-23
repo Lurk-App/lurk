@@ -1,0 +1,47 @@
+{
+  "navigation": "Navigation",
+  "nav": {
+    "subscriptions": "Subscriptions",
+    "browse": "Browse",
+    "categories": "Categories",
+    "history": "History"
+  },
+  "liveSection": "Live from your subscriptions",
+  "liveBadge_one": "{{count}} subscription live now",
+  "liveBadge_other": "{{count}} subscriptions live now",
+  "settings": "Settings",
+  "toggleSidebar": "Toggle sidebar",
+  "back": "Back",
+  "resizeSidebar": "Sidebar width",
+  "search": {
+    "placeholder": "Search channels or categories",
+    "label": "Search",
+    "clear": "Clear search",
+    "searching": "Searching …",
+    "suggestions": "Suggestions",
+    "live": "Live",
+    "offline": "Offline",
+    "followers": "{{value}} followers",
+    "category": "Category",
+    "viewers": "{{value}} viewers",
+    "all": "All results for “{{term}}”",
+    "allSubtitle": "Channels and categories",
+    "linkChannel": "Open channel “{{login}}”",
+    "linkVod": "Play video {{id}}",
+    "linkClip": "Open link",
+    "linkSubtitle": "twitch.tv link",
+    "subscribed": "subscribed"
+  },
+  "pages": {
+    "subscriptions": "Subscriptions",
+    "browse": "Browse",
+    "categories": "Categories",
+    "history": "History",
+    "clip": "Clip"
+  },
+  "placeholder": {
+    "title": "Not here yet",
+    "twitch": "This page arrives in one of the next preview versions. Until then, you can open it on twitch.tv.",
+    "openOnTwitch": "Open on twitch.tv"
+  }
+}

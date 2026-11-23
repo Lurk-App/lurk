@@ -1,0 +1,54 @@
+/* The window "Twitch-Follows übernehmen" (FollowsApp.tsx). Values only through tokens. */
+
+.follows-window {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100vh;
+  background: var(--canvas);
+}
+
+/* The reference's header: padding 16 on the surface, then Divider().opacity(0.5). */
+.follows-head {
+  padding: 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--hairline-soft);
+}
+
+/* Every phase centred below the head (a .message-area, like the player's stage message). */
+.follows-body {
+  min-height: 0;
+  overflow: auto;
+}
+
+.follows-progress {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  color: var(--text-secondary);
+}
+
+.follows-progress p {
+  margin: 0;
+}
+
+/* The code to compare with Twitch's page: large, monospaced, selectable. */
+.device-code {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--type-title);
+  font-weight: 700;
+}
+
+/* Only the code can be selected and copied by hand, not its hidden label. */
+.device-code-value {
+  user-select: text;
+}
+
+.follows-waiting {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: var(--type-caption);
+  color: var(--text-tertiary);
+}

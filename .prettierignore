@@ -1,0 +1,8 @@
+out/
+release/
+node_modules/
+test-results/
+playwright-report/
+tour/out/
+package-lock.json
+LICENSE

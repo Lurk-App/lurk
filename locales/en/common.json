@@ -1,0 +1,9 @@
+{
+  "appName": "Lurk",
+  "live": "LIVE",
+  "loading": "Loading …",
+  "loadFailed": "Loading failed",
+  "retry": "Try again",
+  "nothingFound": "Nothing found",
+  "connectionFailed": "Twitch did not answer. Check the internet connection and try again."
+}

@@ -1,0 +1,42 @@
+name: Bug
+description: Something in Lurk does not work as it should.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open …
+        2. Click …
+        3. See …
+  - type: input
+    id: version
+    attributes:
+      label: Lurk version
+      description: Shown in the About window.
+    validations:
+      required: true
+  - type: dropdown
+    id: system
+    attributes:
+      label: System
+      options: [macOS, Windows, Linux]
+    validations:
+      required: true
+  - type: input
+    id: system-version
+    attributes:
+      label: System version
+      description: For Linux, please add the distribution and whether you use Wayland or X11.
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshots or anything else

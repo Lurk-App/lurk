@@ -1,0 +1,162 @@
+/*
+ * Design tokens (DESIGN.md). Colours are set at runtime by applyTheme.ts from src/shared/theme.ts
+ * (tone, light or dark, accent); everything here is the same for every appearance.
+ * Pages use these variables only – never a literal colour, size or duration.
+ */
+:root {
+  /* Type: page title, section, body, callout (context lines), caption (meta text). */
+  --font: system-ui, -apple-system, 'Segoe UI', Roboto, Ubuntu, Cantarell, 'Noto Sans', sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', 'Segoe UI Mono', 'DejaVu Sans Mono', monospace;
+  --type-title: 28px;
+  --type-title-tracking: -0.4px;
+  --type-section: 17px;
+  --type-section-count: 15px;
+  --type-body: 13px;
+  --type-callout: 12px;
+  --type-caption: 11px;
+  /* Player: the info strip's title and the channel badge's name (the reference's 15 and 14). */
+  --type-strip-title: 15px;
+  --type-badge: 14px;
+  /* Badges and pills on pictures only (the reference's 10 heavy LIVE, its .caption pills, the live
+     count). Meta text is --type-caption (DESIGN.md). */
+  --type-micro: 10px;
+  /* The history row's LIVE (the reference's 9 heavy). */
+  --type-nano: 9px;
+  --line-height-text: 1.45;
+  /* Title and meta lines of tiles and rows (the system font's own line height). */
+  --tile-line-height: 1.25;
+
+  /* Spacing: the reference has no single base; these are its named measures. */
+  --page-edge: 24px;
+  --page-top: 8px;
+  --section-gap: 22px;
+  --grid-gap: 14px;
+  --row-height: 30px;
+  --field-height: 30px;
+  /* Grids of the list pages (the reference's Layout): narrowest column, gap between rows. */
+  --stream-column: 270px;
+  --stream-row-gap: 22px;
+  --game-column: 140px;
+  --game-row-gap: 20px;
+  --channel-column: 300px;
+  --channel-column-gap: 10px;
+  --channel-row-gap: 4px;
+  /* A category's page: the box art beside the header. */
+  --category-head-gap: 18px;
+  /* The search's categories scroll sideways at this width. */
+  --game-strip-width: 136px;
+  /* The tag search beside the filter bar; the height a loading list keeps. */
+  --tag-field-width: 210px;
+  --filter-field-width: 200px;
+  --load-height: 240px;
+
+  /* Radii: rows and fields, cards and stages, floating panels, sheets. */
+  --radius-row: 8px;
+  --radius: 10px;
+  --radius-panel: 12px;
+  --radius-sheet: 16px;
+  /* Box art and small previews. */
+  --radius-thumb: 3px;
+  /* The chat beside the player. */
+  --chat-width: 340px;
+  /* Capsules (player bar, badges). */
+  --radius-capsule: 999px;
+  /* Badges and pills on thumbnails, the category page's box art. */
+  --radius-badge: 4px;
+  --radius-pill: 5px;
+  --radius-box-art: 8px;
+  /* The channel page's live and offline cards. */
+  --radius-banner: 14px;
+  /* Bordered controls (the system's bordered button look). */
+  --radius-control: 6px;
+  --control-height: 26px;
+  /* The large prominent button ("Jetzt ansehen"). */
+  --control-height-large: 32px;
+
+  /* Motion. */
+  --hover: 0.15s ease-out;
+  --fade-duration: 0.18s;
+  --fade: var(--fade-duration) ease-out;
+  --push: 0.35s ease-in-out;
+  --spinner-period: 0.8s;
+
+  /* States. */
+  --disabled-opacity: 0.35;
+
+  --shadow-panel: 0 10px 36px rgba(0, 0, 0, 0.5);
+
+  /*
+   * The video stage: always dark, whatever the appearance (DESIGN.md). Its fixed values, named once.
+   */
+  --stage: #000;
+  --stage-text: #fff;
+  --stage-dim: rgba(0, 0, 0, 0.45);
+  --stage-pill: rgba(0, 0, 0, 0.55);
+  --stage-bar: rgba(30, 30, 34, 0.62);
+  --stage-bar-blur: 20px;
+  --stage-border: rgba(255, 255, 255, 0.1);
+  --stage-hover: rgba(255, 255, 255, 0.14);
+  --stage-on: rgba(255, 255, 255, 0.08);
+  --stage-divider: rgba(255, 255, 255, 0.16);
+  --stage-disabled-opacity: 0.4;
+  --shadow-bar: 0 4px 20px rgba(0, 0, 0, 0.35);
+  --shadow-banner: 0 5px 24px rgba(0, 0, 0, 0.4);
+  --shadow-knob: 0 1px 2px rgba(0, 0, 0, 0.3);
+
+  /* Thumbnails: dark marks on any picture, whatever the appearance (like the stage). */
+  --thumb-pill: rgba(0, 0, 0, 0.72);
+  --thumb-play: rgba(0, 0, 0, 0.55);
+  /* The progress strip's track on a picture. */
+  --thumb-track: rgba(0, 0, 0, 0.55);
+  --thumb-text: #fff;
+  --thumb-hover-scale: 1.03;
+  --shadow-thumb-hover: 0 6px 24px rgba(0, 0, 0, 0.45);
+}
+
+/* Inside a video stage every role takes its dark version (the macOS app's colorScheme .dark). */
+.dark-scope {
+  --canvas: var(--dark-canvas);
+  --surface: var(--dark-surface);
+  --raised: var(--dark-raised);
+  --sidebar: var(--dark-sidebar);
+  --hairline: var(--dark-hairline);
+  --field-fill: var(--dark-field-fill);
+  --quiet-fill: var(--dark-quiet-fill);
+  --text: var(--dark-text);
+  --text-secondary: var(--dark-text-secondary);
+  --text-tertiary: var(--dark-text-tertiary);
+  --accent: var(--dark-accent);
+  --destructive: var(--dark-destructive);
+  --warning: var(--dark-warning);
+  --online: var(--dark-online);
+  color-scheme: dark;
+  color: var(--text);
+}
+
+/*
+ * Derived from the colours above. Declared for :root and again inside a dark stage, so they take
+ * the stage's dark colours there.
+ */
+:root,
+.dark-scope {
+  /* Accent tints used by selection and highlight (DESIGN.md: selection in accent). */
+  --accent-selected: color-mix(in srgb, var(--accent) 20%, transparent);
+  --accent-highlight: color-mix(in srgb, var(--accent) 28%, transparent);
+  --accent-focus: color-mix(in srgb, var(--accent) 80%, transparent);
+  /* Quieter versions: unselected navigation labels, the divider above the settings entry. */
+  --text-nav: color-mix(in srgb, var(--text) 88%, transparent);
+  --hairline-soft: color-mix(in srgb, var(--hairline) 50%, transparent);
+  --banner-fill: color-mix(in srgb, var(--raised) 95%, transparent);
+  /* The prominent button under the pointer: darker, so white text keeps its contrast. */
+  --accent-hover: color-mix(in srgb, var(--accent) 88%, #000);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --hover: 0s;
+    --fade-duration: 0.12s;
+    --fade: var(--fade-duration) linear;
+    --push: 0.12s linear;
+    --spinner-period: 2.4s;
+  }
+}

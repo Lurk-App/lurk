@@ -1,0 +1,150 @@
+{
+  "untitled": "Untitled",
+  "uptime": "Live for {{value}}",
+  "refresh": "Refresh ({{shortcut}})",
+  "menu": {
+    "watch": "Watch",
+    "openChannel": "Open channel",
+    "openCategory": "Open category “{{name}}”"
+  },
+  "content": {
+    "label": "Content",
+    "help": "Filter by kind of content",
+    "all": "All",
+    "games": "Games",
+    "irl": "IRL",
+    "music": "Music",
+    "creative": "Creative",
+    "esports": "Esports"
+  },
+  "contentStreams": {
+    "all": "Live streams",
+    "games": "Game streams",
+    "irl": "IRL streams",
+    "music": "Music streams",
+    "creative": "Creative streams",
+    "esports": "Esports streams"
+  },
+  "sort": {
+    "label": "Sort",
+    "help": "Sort",
+    "VIEWER_COUNT": "Most viewers",
+    "VIEWER_COUNT_ASC": "Fewest viewers",
+    "RECENT": "Recently started"
+  },
+  "language": {
+    "label": "Language",
+    "help": "Filter streams by language",
+    "all": "All languages",
+    "DE": "German",
+    "EN": "English",
+    "ES": "Spanish",
+    "FR": "French",
+    "IT": "Italian",
+    "PT": "Portuguese",
+    "NL": "Dutch",
+    "PL": "Polish",
+    "TR": "Turkish",
+    "RU": "Russian",
+    "JA": "Japanese",
+    "KO": "Korean"
+  },
+  "tag": {
+    "label": "Tag filter",
+    "placeholder": "Search a tag, e.g. English",
+    "remove": "Remove tag filter",
+    "removeNamed": "Remove tag filter “{{tag}}”",
+    "clear": "Clear",
+    "searching": "Searching tags …",
+    "suggestions": "Tag suggestions"
+  },
+  "streams": {
+    "emptyTitle": "Nobody live",
+    "emptyText": "There are no streams for this selection right now."
+  },
+  "categories": {
+    "allTopics": "Games and topics",
+    "emptyText": "No category matches this selection."
+  },
+  "search": {
+    "title": "“{{term}}”",
+    "channels_one": "{{count, number}} channel",
+    "channels_other": "{{count, number}} channels",
+    "categories_one": "{{count, number}} category",
+    "categories_other": "{{count, number}} categories",
+    "categoriesSection": "Categories",
+    "channelsSection": "Channels",
+    "noChannels": "No channels found for “{{term}}”.",
+    "failedTitle": "Search failed",
+    "live": "Live",
+    "offline": "Offline",
+    "followers": "{{value}} followers"
+  },
+  "video": {
+    "length": "Length {{value}}"
+  },
+  "channel": {
+    "notFound": "Channel not found",
+    "notFoundText": "There is no channel “{{login}}”.",
+    "live": "live",
+    "liveLabel": "Live now",
+    "watchNow": "Watch now",
+    "offline": "Offline · last live {{when}}",
+    "videos": "Videos",
+    "kindLabel": "Channel content",
+    "kind": {
+      "ARCHIVE": "Past broadcasts",
+      "HIGHLIGHT": "Highlights",
+      "UPLOAD": "Uploads"
+    },
+    "empty": {
+      "ARCHIVE": "No past broadcasts",
+      "HIGHLIGHT": "No highlights",
+      "UPLOAD": "No uploads"
+    },
+    "emptyText": "Twitch keeps broadcasts only for days to weeks, and some channels do not save them at all."
+  },
+  "history": {
+    "kept": "Stored on this computer only",
+    "off": "Off – new playback is not saved",
+    "filter": "Filter history",
+    "clearFilter": "Clear filter",
+    "clear": "Clear history …",
+    "emptyTitle": "No history yet",
+    "emptyText": "Streams and videos you watch appear here.",
+    "emptyOff": "You can turn the history back on in the settings.",
+    "noMatch": "Nothing found for “{{filter}}”.",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "remove": "Remove from history",
+    "removeNamed": "Remove “{{title}}” from history"
+  },
+  "subscribe": {
+    "action": "Subscribe",
+    "done": "Subscribed",
+    "end": "Unsubscribe",
+    "help": "Subscribe locally – no account needed"
+  },
+  "subs": {
+    "kept": "Stored on this computer only – no account",
+    "someLive_one": "{{live}} of {{total}} channel live",
+    "someLive_other": "{{live}} of {{total}} channels live",
+    "noneLive_one": "{{total}} channel · nobody live right now",
+    "noneLive_other": "{{total}} channels · nobody live right now",
+    "transfer": "Import/Export",
+    "transferHelp": "Import or export subscriptions",
+    "fromTwitch": "Import from Twitch …",
+    "import": "Import subscriptions …",
+    "exportJson": "Export as JSON …",
+    "exportText": "Export as text list …",
+    "refresh": "Refresh live status ({{shortcut}})",
+    "failed": "The live status could not be loaded. Lurk tries again in two minutes.",
+    "loading": "Loading live status …",
+    "nobodyLive": "None of your channels is live right now.",
+    "offline": "Offline",
+    "lastLive": "Last live {{when}}",
+    "emptyTitle": "No subscriptions yet",
+    "emptyText": "Subscribe to channels with “Subscribe” – no account needed. Or search for your favourite channels at the top left.",
+    "discover": "Discover streams"
+  }
+}
