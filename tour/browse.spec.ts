@@ -128,18 +128,22 @@ test('Kategorien opens a category with its streams', async () => {
 
 test('the search lists channels and categories on its own page', async () => {
   const search = page.getByRole('combobox', { name: shell.search.label, exact: true });
-  await search.fill('minecraft');
-  const all = page.getByRole('option', { name: new RegExp(shell.search.allSubtitle) });
-  await expect(all).toBeVisible({ timeout: 15_000 });
-  await all.click();
-  await expect(
-    front().getByRole('heading', { level: 1, name: browse.search.title.replace('{{term}}', 'minecraft') }),
-  ).toBeVisible();
-  await expect(front().getByRole('heading', { level: 2, name: new RegExp(browse.search.channelsSection) })).toBeVisible(
-    {
-      timeout: 15_000,
-    },
-  );
+  // Twitch's search now and then answers without channels (CI, 2026-11-24); the step takes the first
+  // term it lists channels for.
+  for (const term of ['minecraft', 'fortnite', 'valorant']) {
+    await search.fill(term);
+    const all = page.getByRole('option', { name: new RegExp(shell.search.allSubtitle) });
+    await expect(all).toBeVisible({ timeout: 15_000 });
+    await all.click();
+    await expect(
+      front().getByRole('heading', { level: 1, name: browse.search.title.replace('{{term}}', term) }),
+    ).toBeVisible();
+    await expect(
+      front().getByRole('heading', { level: 2, name: new RegExp(browse.search.channelsSection) }),
+    ).toBeVisible({ timeout: 15_000 });
+    await expect(front().locator('.channel-row, .search-empty').first()).toBeVisible();
+    if ((await front().locator('.channel-row').count()) > 0) break;
+  }
   await expect(front().locator('.channel-row').first()).toBeVisible();
   // Counts in the interface language, singular or plural.
   await expect(subtitle()).toHaveText(/^\d[\d.,]* \S+ · \d[\d.,]* \S+$/);
