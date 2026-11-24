@@ -149,11 +149,23 @@ test('with ads only in the first session, the stream goes on from the second sou
 });
 
 test('a mid-roll is hidden once it is reached, a clip plays, then the stream goes on', async () => {
+  test.setTimeout(300_000);
   const before = (await page.evaluate(() => window.lurk.blocker.state())).totals.adBreaks;
-  await planAd('all', 45);
-  await expect(banners()).toContainText(player.midrollTitle, { timeout: 30_000 });
-  // A popular clip of the channel takes the stage (the dimmed preview until it plays).
-  await expect(page.locator('.stage-clip.is-visible')).toBeVisible({ timeout: 25_000 });
+  const clip = page.locator('.stage-clip.is-visible');
+  // A popular clip of the channel takes the stage (the dimmed preview until it plays). When Twitch
+  // gives no clip, the dimmed preview stays for that break (as on macOS, CI 2026-11-24); a second
+  // break asks again.
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    await planAd('all', 45);
+    await expect(banners()).toContainText(player.midrollTitle, { timeout: 30_000 });
+    const shown = await clip
+      .waitFor({ timeout: 25_000 })
+      .then(() => true)
+      .catch(() => false);
+    if (shown) break;
+    await expect(banners()).not.toContainText(player.midrollTitle, { timeout: 90_000 });
+  }
+  await expect(clip).toBeVisible();
   await expect(banners()).toContainText(player.clipDetail.split('{{')[0]!.trim());
   await page.screenshot({ path: path.join(screenshots, 'player-werbung-clip.png') });
   // After the break the stream goes on at the live edge, the clip and the banner go.
