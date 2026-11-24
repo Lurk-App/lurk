@@ -178,71 +178,72 @@ export function Window({ platform }: { platform: Platform }) {
     <ToolbarButton icon={ChevronLeft} label={t('back')} disabled={atRoot} onClick={() => dispatch({ type: 'back' })} />
   );
 
+  // The provider covers the sidebar too: its live rows open the player (and their menu's "Ansehen").
   return (
-    <div
-      className={`window platform-${platform}${showsSidebar ? '' : ' sidebar-hidden'}${cinema ? ' is-cinema' : ''}`}
-      style={{ ['--sidebar-width' as string]: `${sidebarWidth}px` }}
-    >
-      {showsSidebar ? (
-        <>
-          <div className="titlebar titlebar-sidebar">{toggleButton}</div>
-          <aside className="sidebar">
-            <SearchField ref={searchField} search={search} onActivate={activate} />
-            <nav className="sidebar-nav" aria-label={t('navigation')}>
-              {sections.map((section) => (
-                <NavRow
-                  key={section}
-                  icon={navIcons[section]}
-                  title={t(`nav.${section}`)}
-                  selected={state.section === section && atRoot}
-                  badge={section === 'subscriptions' ? liveNow.length : 0}
-                  onClick={() => dispatch({ type: 'select', section })}
-                />
-              ))}
-            </nav>
-            <div className="sidebar-scroll">
-              {liveNow.length ? (
-                <section className="sidebar-section" aria-labelledby="sidebar-live-title">
-                  <h2 className="sidebar-section-title" id="sidebar-live-title">
-                    {t('liveSection')}
-                  </h2>
-                  {liveNow.slice(0, 20).map((stream) => (
-                    <LiveRow
-                      key={stream.broadcaster.id}
-                      stream={stream}
-                      playing={playingLogin === stream.broadcaster.login.toLowerCase()}
-                    />
-                  ))}
-                </section>
-              ) : null}
-            </div>
-            <button type="button" className="sidebar-settings" onClick={() => window.lurk.openSettings()}>
-              <Icon icon={Settings} size={15} />
-              <span>{t('settings')}</span>
-            </button>
-            <div
-              className="sidebar-resize"
-              role="separator"
-              aria-orientation="vertical"
-              aria-label={t('resizeSidebar')}
-              aria-valuemin={sidebarLimits.min}
-              aria-valuemax={sidebarLimits.max}
-              aria-valuenow={sidebarWidth}
-              tabIndex={0}
-              onPointerDown={startResize}
-              onKeyDown={resizeWithKeys}
-            />
-          </aside>
-        </>
-      ) : null}
-      {cinema ? null : (
-        <div className="titlebar titlebar-content">
-          {showsSidebar ? null : toggleButton}
-          {backButton}
-        </div>
-      )}
-      <main className="content">
-        <OpenRouteContext.Provider value={openRoute}>
+    <OpenRouteContext.Provider value={openRoute}>
+      <div
+        className={`window platform-${platform}${showsSidebar ? '' : ' sidebar-hidden'}${cinema ? ' is-cinema' : ''}`}
+        style={{ ['--sidebar-width' as string]: `${sidebarWidth}px` }}
+      >
+        {showsSidebar ? (
+          <>
+            <div className="titlebar titlebar-sidebar">{toggleButton}</div>
+            <aside className="sidebar">
+              <SearchField ref={searchField} search={search} onActivate={activate} />
+              <nav className="sidebar-nav" aria-label={t('navigation')}>
+                {sections.map((section) => (
+                  <NavRow
+                    key={section}
+                    icon={navIcons[section]}
+                    title={t(`nav.${section}`)}
+                    selected={state.section === section && atRoot}
+                    badge={section === 'subscriptions' ? liveNow.length : 0}
+                    onClick={() => dispatch({ type: 'select', section })}
+                  />
+                ))}
+              </nav>
+              <div className="sidebar-scroll">
+                {liveNow.length ? (
+                  <section className="sidebar-section" aria-labelledby="sidebar-live-title">
+                    <h2 className="sidebar-section-title" id="sidebar-live-title">
+                      {t('liveSection')}
+                    </h2>
+                    {liveNow.slice(0, 20).map((stream) => (
+                      <LiveRow
+                        key={stream.broadcaster.id}
+                        stream={stream}
+                        playing={playingLogin === stream.broadcaster.login.toLowerCase()}
+                      />
+                    ))}
+                  </section>
+                ) : null}
+              </div>
+              <button type="button" className="sidebar-settings" onClick={() => window.lurk.openSettings()}>
+                <Icon icon={Settings} size={15} />
+                <span>{t('settings')}</span>
+              </button>
+              <div
+                className="sidebar-resize"
+                role="separator"
+                aria-orientation="vertical"
+                aria-label={t('resizeSidebar')}
+                aria-valuemin={sidebarLimits.min}
+                aria-valuemax={sidebarLimits.max}
+                aria-valuenow={sidebarWidth}
+                tabIndex={0}
+                onPointerDown={startResize}
+                onKeyDown={resizeWithKeys}
+              />
+            </aside>
+          </>
+        ) : null}
+        {cinema ? null : (
+          <div className="titlebar titlebar-content">
+            {showsSidebar ? null : toggleButton}
+            {backButton}
+          </div>
+        )}
+        <main className="content">
           <PageFor
             state={state}
             platform={platform}
@@ -251,9 +252,9 @@ export function Window({ platform }: { platform: Platform }) {
             open={openRoute}
             onSelect={(section) => dispatch({ type: 'select', section })}
           />
-        </OpenRouteContext.Provider>
-      </main>
-    </div>
+        </main>
+      </div>
+    </OpenRouteContext.Provider>
   );
 }
 

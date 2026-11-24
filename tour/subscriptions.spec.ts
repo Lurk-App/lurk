@@ -126,6 +126,35 @@ test('subscribing on a channel page puts it in the sidebar while live', async ()
   await page.screenshot({ path: path.join(screenshots, '18-abonniert.png') });
 });
 
+test('a live row in the sidebar opens the player, and so does "Ansehen" in its menu', async () => {
+  const row = page.locator('.live-row').first();
+  await row.click();
+  await expect(page.locator('.page-layer:not(.is-covered) .player-page')).toBeVisible({ timeout: 15_000 });
+  // The row marks the channel that plays.
+  await expect(row).toHaveAttribute('aria-current', 'true');
+  await page.getByRole('button', { name: shell.back, exact: true }).click();
+  await expect(page.locator('.page-layer:not(.is-covered) .player-page')).toHaveCount(0);
+  // The system menu: the tour picks "Ansehen" (Playwright cannot click it). Only the row's menu is
+  // answered; the app menu, rebuilt on a settings change meanwhile, passes through.
+  await app.evaluate(({ Menu }, label) => {
+    const original = Menu.buildFromTemplate;
+    Menu.buildFromTemplate = ((template: Electron.MenuItemConstructorOptions[]) => {
+      if (!template.some((entry) => entry.label === label)) return original(template);
+      Menu.buildFromTemplate = original;
+      return {
+        popup: (options: Electron.PopupOptions = {}) => {
+          (template.find((entry) => entry.label === label)?.click as (() => void) | undefined)?.();
+          options.callback?.();
+        },
+      } as unknown as Electron.Menu;
+    }) as typeof Menu.buildFromTemplate;
+  }, browse.menu.watch);
+  await row.click({ button: 'right' });
+  await expect(page.locator('.page-layer:not(.is-covered) .player-page')).toBeVisible({ timeout: 15_000 });
+  await expect(row).toHaveAttribute('aria-current', 'true');
+  await page.getByRole('button', { name: shell.back, exact: true }).click();
+});
+
 test('the heart in the search subscribes an offline channel too', async () => {
   // Up to three terms, each search asked again up to three times.
   test.setTimeout(360_000);
