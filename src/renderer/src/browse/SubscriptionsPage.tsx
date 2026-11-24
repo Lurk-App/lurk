@@ -1,5 +1,6 @@
 // "Abos": subscriptions without an account – the live ones as tiles, the others as rows, import and
-// export in the header (with "Von Twitch übernehmen …" while Lurk's Twitch client id is set). Port
+// export in the header (with "Von Twitch übernehmen …" while Lurk's Twitch client id is set, then
+// also on the empty page). Port
 // of SubscriptionsView of the macOS app (lurk-macos, Sources/Lurk/Views/SubscriptionsView.swift),
 // Twitch only; the first-steps card comes with the introduction.
 
@@ -125,7 +126,13 @@ export function SubscriptionsPage({
           title={t('subs.emptyTitle')}
           text={t('subs.emptyText')}
           action={{ label: t('subs.discover'), onClick: onBrowse, prominent: true }}
-          secondaryAction={{ label: t('subs.import'), onClick: () => void window.lurk.subscriptions.importFile() }}
+          // Where a new user looks first: the follows from Twitch, while Lurk can read them (asked
+          // for 2026-11-24 – on macOS only in the menu); the file import stays in "Import/Export".
+          secondaryAction={
+            appInfo().twitchImport
+              ? { label: t('subs.fromTwitch'), onClick: () => window.lurk.subscriptions.importFromTwitch() }
+              : { label: t('subs.import'), onClick: () => void window.lurk.subscriptions.importFile() }
+          }
         />
       ) : (
         <>

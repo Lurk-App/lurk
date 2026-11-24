@@ -246,8 +246,9 @@ Built (stage 1, part 2):
   the heart alone at the end of a search result row; "Abonnieren / Abo beenden" in the right-click
   menus. The Abos page: live subscriptions as stream tiles, then "Offline" as channel rows (last
   live first), "Import/Export" as a system menu and the refresh button in the header; empty, two
-  ways on ("Streams entdecken", "Abos importieren …"). Import and export use the system's file
-  dialogs and tell the result in a system message.
+  ways on ("Streams entdecken" and "Von Twitch übernehmen …" – decided 2026-11-24, the Mac has it
+  only in the menu; without Lurk's Twitch client "Abos importieren …"). Import and export use the
+  system's file dialogs and tell the result in a system message.
 - **Sidebar live section:** "Live aus deinen Abos" (caption semibold, tertiary) with at most 20
   rows: avatar 26, name, category, a red dot and the viewers; the row that plays in
   `--accent-selected`. "Abos" carries the number of live subscriptions as a red capsule.
@@ -260,14 +261,17 @@ Built (stage 1, part 2):
   there is nothing to delete).
 - **Menus in pages** are the system's own (opened by the main process at the button), like the
   macOS app's.
-- **"Von Twitch übernehmen"** (part 6b; first in the Abos page's "Import/Export" while Lurk's
-  Twitch client id is set): its own window, 480 × 460, not resizable, the system's title bar. On
+- **"Von Twitch übernehmen"** (part 6b; first in the Abos page's "Import/Export" and on the
+  empty Abos page while Lurk's Twitch client id is set): its own window, 480 × 460, not resizable, the system's title bar. On
   top the `Intro` on `--surface` (padding 16, a `--hairline-soft` line below); below it, centred
   like the player's stage message, one phase at a time: preparing and reading (large spinner and a
   line), the code (`EmptyState` with the code in the monospaced font at 28 px bold, "Twitch im
   Browser öffnen" and "Code kopieren", a waiting line in caption tertiary), the question "Follows
   von @… übernehmen?" (Übernehmen / Abbrechen), done ("Fertig") and failed ("Erneut versuchen").
-  Return is the default action of the question and of done. The sign-in runs in the user's
+  Return is the default action of the question and of done. Once the browser step is done, the
+  window comes to the front with the question (or the refusal, or a failure while reading; not an
+  expired code); where the system refuses the focus, the taskbar button flashes or the Dock icon
+  bounces once. The sign-in runs in the user's
   browser (device code) – unlike the macOS app, which embeds twitch.tv's login.
 - **The shield** (part 7a) sits in the player's bar after the chat switch: `ShieldHalf` in the
   accent while the ad blocker is on, `ShieldOff` in `--text-tertiary` while off; this stream's

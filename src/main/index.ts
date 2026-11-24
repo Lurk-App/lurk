@@ -10,6 +10,7 @@ import { handleAppScheme, registerAppScheme } from './protocol';
 import { secureSession, secureWebContents } from './security';
 import { libraryStore } from './libraryStore';
 import { blocker } from './blocker';
+import type { FollowsPhase } from '@shared/follows';
 import { followsImport } from './followsImport';
 import { liveMonitor } from './liveMonitor';
 import { settingsStore } from './settingsStore';
@@ -18,6 +19,7 @@ import {
   broadcastLibrary,
   broadcastLive,
   broadcastSettings,
+  bringFollowsWindowForward,
   createMainWindow,
   getMainWindow,
   refreshBackgrounds,
@@ -53,7 +55,17 @@ if (!app.requestSingleInstanceLock()) {
     libraryStore.onChange(broadcastLibrary);
     libraryStore.onWatchTime(sendWatchTime);
     liveMonitor.onChange(broadcastLive);
-    followsImport.onChange(sendFollowsPhase);
+    // The answer to what the user just did in the browser comes to the front: the question, a
+    // refusal there, or a failure while reading. Not an expired code or a failure before it.
+    let previousPhase: FollowsPhase['kind'] | null = null;
+    followsImport.onChange((phase) => {
+      sendFollowsPhase(phase);
+      const answer =
+        phase.kind === 'confirm' ||
+        (phase.kind === 'failed' && (phase.reason === 'denied' || previousPhase === 'reading'));
+      if (answer) bringFollowsWindowForward();
+      previousPhase = phase.kind;
+    });
     blocker.onChange(broadcastBlocker);
     liveMonitor.start();
     // "Wie das System": a system switch changes the window backgrounds too.

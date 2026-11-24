@@ -2,7 +2,14 @@
 // übernehmen". Both load the interface from
 // lurk://app and take their background from the current appearance, so they never flash white.
 
-import { BrowserWindow, nativeTheme, screen, type BrowserWindowConstructorOptions, type WebContents } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  nativeTheme,
+  screen,
+  type BrowserWindowConstructorOptions,
+  type WebContents,
+} from 'electron';
 import path from 'node:path';
 import { Channel, type AppCommand, type SettingsTab } from '@shared/ipc';
 import type { LibraryState } from '@shared/library';
@@ -163,6 +170,29 @@ export function closeFollowsWindow(): void {
 export function isFollowsPage(contents: WebContents): boolean {
   return followsWindow !== null && !followsWindow.isDestroyed() && followsWindow.webContents === contents;
 }
+
+/**
+ * After the browser step the user is still in the browser: the question "Follows von @…
+ * übernehmen?" (or what went wrong) comes to the front instead of waiting unseen behind it.
+ */
+export function bringFollowsWindowForward(): void {
+  const window = followsWindow;
+  if (!window || window.isDestroyed()) return;
+  if (window.isMinimized()) window.restore();
+  if (process.platform === 'darwin') app.focus({ steal: true });
+  window.show();
+  window.focus();
+  // The system may refuse the focus from the background (Windows; macOS can decline it, and its
+  // activation takes a moment): then the taskbar button flashes or the Dock icon bounces once.
+  setTimeout(() => {
+    if (window.isDestroyed() || window.isFocused()) return;
+    window.flashFrame(true);
+    window.once('focus', () => window.flashFrame(false));
+  }, flashAfterMs);
+}
+
+/** How long the focus may take before the window asks for attention instead (ms). */
+const flashAfterMs = 400;
 
 /** The import's phase reaches only its own window. */
 export function sendFollowsPhase(phase: FollowsPhase): void {

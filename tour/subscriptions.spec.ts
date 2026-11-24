@@ -51,7 +51,8 @@ const nav = () => page.getByRole('navigation');
 test('without subscriptions, the Abos page offers two ways on', async () => {
   await nav().getByRole('button', { name: shell.nav.subscriptions }).click();
   await expect(front().getByRole('heading', { level: 2, name: browse.subs.emptyTitle })).toBeVisible();
-  await expect(front().getByRole('button', { name: browse.subs.import })).toBeVisible();
+  // With Lurk's Twitch client: the follows from Twitch (the file import is in "Import/Export").
+  await expect(front().getByRole('button', { name: browse.subs.fromTwitch })).toBeVisible();
   await front().getByRole('button', { name: browse.subs.discover }).click();
   await expect(front().getByRole('heading', { level: 1, name: shell.pages.browse })).toBeVisible();
 });
