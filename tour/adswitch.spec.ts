@@ -10,11 +10,9 @@ import os from 'node:os';
 import path from 'node:path';
 import dePlayer from '../locales/de/player.json' with { type: 'json' };
 import deSettings from '../locales/de/settings.json' with { type: 'json' };
-import deShell from '../locales/de/shell.json' with { type: 'json' };
 import enPlayer from '../locales/en/player.json' with { type: 'json' };
 import enSettings from '../locales/en/settings.json' with { type: 'json' };
-import enShell from '../locales/en/shell.json' with { type: 'json' };
-import { searchableLiveStreams } from './live';
+import { playFromSearch, searchableLiveStreams } from './live';
 
 const screenshots = path.join('tour', 'out', process.platform);
 let app: ElectronApplication;
@@ -22,7 +20,6 @@ let page: Page;
 let dataDir: string;
 let player: typeof enPlayer;
 let settingsText: typeof enSettings;
-let shell: typeof enShell;
 /** The channel that plays first, and the two subscribed ones (the second with watch time). */
 let primary: { login: string; displayName: string };
 let favourite: { id: string; login: string; displayName: string };
@@ -43,16 +40,23 @@ test.describe.configure({ mode: 'serial', timeout: 240_000 });
 
 const ads = () => app.evaluate(() => (globalThis as unknown as { tourAds: TourAds }).tourAds) as Promise<TourAds>;
 
-/** An ad in every session of `login`, from now on for `seconds`. */
+/**
+ * Marked from this far back, so every session's live edge has the ad at once: Twitch's sessions lag
+ * by different amounts, and one still showing what came before the start would be ad-free – Lurk
+ * would rightly go on from it (CI, 2026-11-24).
+ */
+const adLeadMs = 20_000;
+
+/** An ad in every session of `login`, at the live edge for `seconds` from now. */
 async function planAd(login: string, seconds: number): Promise<void> {
   await app.evaluate(
-    (_electron, { who, length }) => {
+    (_electron, { who, length, lead }) => {
       const state = (globalThis as unknown as { tourAds: TourAds }).tourAds;
       state.login = who;
-      state.start = Date.now();
-      state.end = state.start + length * 1000;
+      state.start = Date.now() - lead;
+      state.end = Date.now() + length * 1000;
     },
-    { who: login, length: seconds },
+    { who: login, length: seconds, lead: adLeadMs },
   );
 }
 
@@ -68,7 +72,6 @@ test.beforeAll(async () => {
   const language = await page.evaluate(() => document.documentElement.lang);
   player = language === 'de' ? dePlayer : enPlayer;
   settingsText = language === 'de' ? deSettings : enSettings;
-  shell = language === 'de' ? deShell : enShell;
   await page.evaluate(() => window.lurk.settings.update({ player: { muted: true } }));
 
   await app.evaluate(({ net, session }) => {
@@ -150,11 +153,7 @@ const detourTitle = (from: string, to: string) =>
   player.detourTitle.replace('{{primary}}', from).replace('{{channel}}', to);
 
 test('the subscribed channels are read in the background while a stream plays', async () => {
-  const search = page.getByRole('combobox', { name: shell.search.label, exact: true });
-  await search.fill(primary.login);
-  const live = page.getByRole('option').filter({ hasText: shell.search.live }).first();
-  await expect(live).toBeVisible({ timeout: 30_000 });
-  await live.click();
+  await playFromSearch(page, primary.login);
   await expect.poll(currentTime, { timeout: 60_000 }).toBeGreaterThan(2);
   await expect
     .poll(async () => (await ads()).opened, { timeout: 30_000 })

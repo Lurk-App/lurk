@@ -13,7 +13,7 @@ import enChat from '../locales/en/chat.json' with { type: 'json' };
 import enPlayer from '../locales/en/player.json' with { type: 'json' };
 import enSettings from '../locales/en/settings.json' with { type: 'json' };
 import enShell from '../locales/en/shell.json' with { type: 'json' };
-import { searchableLiveStreams } from './live';
+import { playFromSearch, searchableLiveStreams } from './live';
 
 const screenshots = path.join('tour', 'out', process.platform);
 let app: ElectronApplication;
@@ -56,11 +56,7 @@ test.afterAll(async () => {
 const video = () => page.locator('video.stage-video:not(.stage-clip)');
 
 test('a live channel from the search opens the player and plays', async () => {
-  const search = page.getByRole('combobox', { name: shell.search.label, exact: true });
-  await search.fill(login);
-  const live = page.getByRole('option').filter({ hasText: shell.search.live }).first();
-  await expect(live).toBeVisible({ timeout: 30_000 });
-  await live.click();
+  await playFromSearch(page, login);
   await expect(page.getByRole('region', { name: player.player })).toBeVisible();
   // The picture runs: the playhead moves.
   await expect

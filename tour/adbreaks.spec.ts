@@ -11,17 +11,14 @@ import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import dePlayer from '../locales/de/player.json' with { type: 'json' };
-import deShell from '../locales/de/shell.json' with { type: 'json' };
 import enPlayer from '../locales/en/player.json' with { type: 'json' };
-import enShell from '../locales/en/shell.json' with { type: 'json' };
-import { searchableLiveStreams } from './live';
+import { playFromSearch, searchableLiveStreams } from './live';
 
 const screenshots = path.join('tour', 'out', process.platform);
 let app: ElectronApplication;
 let page: Page;
 let dataDir: string;
 let player: typeof enPlayer;
-let shell: typeof enShell;
 let login: string;
 
 interface TourAds {
@@ -40,16 +37,23 @@ test.describe.configure({ mode: 'serial', timeout: 180_000 });
 
 const ads = () => app.evaluate(() => (globalThis as unknown as { tourAds: TourAds }).tourAds) as Promise<TourAds>;
 
-/** An ad from the live edge on, for `seconds`. */
+/**
+ * Marked from this far back, so every session's live edge has the ad at once: Twitch's sessions lag
+ * by different amounts, and one still showing what came before the start would be ad-free – Lurk
+ * would rightly go on from it (CI, 2026-11-24).
+ */
+const adLeadMs = 20_000;
+
+/** An ad at the live edge, for `seconds` from now. */
 async function planAd(sessions: TourAds['sessions'], seconds: number): Promise<void> {
   await app.evaluate(
-    (_electron, { sessions: which, length }) => {
+    (_electron, { sessions: which, length, lead }) => {
       const state = (globalThis as unknown as { tourAds: TourAds }).tourAds;
       state.sessions = which;
-      state.start = Date.now();
-      state.end = state.start + length * 1000;
+      state.start = Date.now() - lead;
+      state.end = Date.now() + length * 1000;
     },
-    { sessions, length: seconds },
+    { sessions, length: seconds, lead: adLeadMs },
   );
 }
 
@@ -60,7 +64,6 @@ test.beforeAll(async () => {
   await expect(page.getByRole('navigation')).toBeVisible();
   const language = await page.evaluate(() => document.documentElement.lang);
   player = language === 'de' ? dePlayer : enPlayer;
-  shell = language === 'de' ? deShell : enShell;
   await page.evaluate(() => window.lurk.settings.update({ player: { muted: true } }));
   const [top] = await searchableLiveStreams(page);
   login = top!.broadcaster.login;
@@ -122,11 +125,7 @@ const currentTime = () => video().evaluate((element: HTMLVideoElement) => elemen
 const banners = () => page.locator('.banners');
 
 test('a stream plays, and its second source is opened in the background', async () => {
-  const search = page.getByRole('combobox', { name: shell.search.label, exact: true });
-  await search.fill(login);
-  const live = page.getByRole('option').filter({ hasText: shell.search.live }).first();
-  await expect(live).toBeVisible({ timeout: 30_000 });
-  await live.click();
+  await playFromSearch(page, login);
   await expect.poll(currentTime, { timeout: 60_000 }).toBeGreaterThan(2);
   // The first session asks as "embed", the second source as "popout".
   await expect.poll(async () => (await ads()).ushers, { timeout: 20_000 }).toEqual(['embed', 'popout']);
