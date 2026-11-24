@@ -24,6 +24,7 @@ let shell: typeof enShell;
 let chat: typeof enChat;
 let settingsText: typeof enSettings;
 let login: string;
+let second: string;
 
 // One app for all steps: a failing step skips the rest instead of starting a fresh app.
 test.describe.configure({ mode: 'serial', timeout: 120_000 });
@@ -42,8 +43,9 @@ test.beforeAll(async () => {
   await page.evaluate(() => window.lurk.settings.update({ player: { muted: true } }));
   // The most watched English stream: its chat shows emotes within seconds (the most watched stream
   // overall may chat in a language that uses few).
-  const [top] = await searchableLiveStreams(page);
+  const [top, next] = await searchableLiveStreams(page, 2);
   login = top!.broadcaster.login;
+  second = next!.broadcaster.login;
   mkdirSync(screenshots, { recursive: true });
 });
 
@@ -71,10 +73,20 @@ test('the chat connects, shows messages and emotes as images', async () => {
   await expect(panel).toBeVisible();
   await expect(panel.getByRole('img', { name: chat.connected })).toBeVisible({ timeout: 20_000 });
   await expect(panel.locator('.chat-row').first()).toBeVisible({ timeout: 30_000 });
-  // A busy chat shows emotes soon; each is an image with its name.
-  await expect(panel.locator('img.chat-emote:not(.is-hidden), canvas.chat-emote').first()).toBeVisible({
-    timeout: 60_000,
-  });
+  // A busy chat shows emotes soon; each is an image with its name. A chat without any for a minute
+  // (a tournament's, CI 2026-11-24) says nothing about Lurk: the tour then watches the second
+  // channel's.
+  test.setTimeout(240_000);
+  const emote = panel.locator('img.chat-emote:not(.is-hidden), canvas.chat-emote').first();
+  const shown = await emote
+    .waitFor({ timeout: 60_000 })
+    .then(() => true)
+    .catch(() => false);
+  if (!shown) {
+    await playFromSearch(page, second);
+    await expect(panel.getByRole('img', { name: chat.connected })).toBeVisible({ timeout: 20_000 });
+  }
+  await expect(emote).toBeVisible({ timeout: 60_000 });
   await expect(panel.getByText(chat.readOnly)).toBeVisible();
 });
 

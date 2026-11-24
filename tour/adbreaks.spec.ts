@@ -127,8 +127,21 @@ const banners = () => page.locator('.banners');
 test('a stream plays, and its second source is opened in the background', async () => {
   await playFromSearch(page, login);
   await expect.poll(currentTime, { timeout: 60_000 }).toBeGreaterThan(2);
-  // The first session asks as "embed", the second source as "popout".
-  await expect.poll(async () => (await ads()).ushers, { timeout: 20_000 }).toEqual(['embed', 'popout']);
+  // The first session asks as "embed", the second source as "popout" – once more for each new start
+  // when the player asked Twitch again (CI, 2026-11-24).
+  await expect
+    .poll(
+      async () => {
+        const ushers = (await ads()).ushers;
+        return (
+          ushers.length > 0 &&
+          ushers.length % 2 === 0 &&
+          ushers.every((type, i) => type === (i % 2 ? 'popout' : 'embed'))
+        );
+      },
+      { timeout: 20_000 },
+    )
+    .toBe(true);
 });
 
 test('with ads only in the first session, the stream goes on from the second source', async () => {
