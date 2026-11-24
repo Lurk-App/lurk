@@ -31,6 +31,8 @@ interface TourAds {
   ushers: string[];
   /** Media playlist (without query) → player_type of its session. */
   sessionOf: Record<string, string>;
+  /** player_type → whether its latest playlist carried Twitch's own ad (before the tour's). */
+  twitchAd: Record<string, boolean>;
 }
 
 test.describe.configure({ mode: 'serial', timeout: 180_000 });
@@ -70,7 +72,7 @@ test.beforeAll(async () => {
 
   // Twitch's answers, passed through – with an ad marked into a session's playlists while planned.
   await app.evaluate(({ net, session }) => {
-    const state: TourAds = { sessions: 'all', start: 0, end: 0, ushers: [], sessionOf: {} };
+    const state: TourAds = { sessions: 'all', start: 0, end: 0, ushers: [], sessionOf: {}, twitchAd: {} };
     (globalThis as unknown as { tourAds: TourAds }).tourAds = state;
     const plain = (url: string) => url.split('?')[0]!;
     session.defaultSession.protocol.handle('https', async (request) => {
@@ -88,6 +90,11 @@ test.beforeAll(async () => {
         return new Response(text, { status: 200, headers });
       }
       const type = state.sessionOf[plain(request.url)];
+      if (type) {
+        state.twitchAd[type] =
+          text.includes('CLASS="twitch-stitched-ad"') ||
+          text.split('\n').some((line) => line.startsWith('#EXTINF:') && /,\S/.test(line) && !/,live\s*$/.test(line));
+      }
       const now = Date.now();
       const planned = state.end > now && (state.sessions === 'all' || type === 'embed');
       if (!planned) return new Response(text, { status: 200, headers });
@@ -145,6 +152,10 @@ test('a stream plays, and its second source is opened in the background', async 
 });
 
 test('with ads only in the first session, the stream goes on from the second source', async () => {
+  test.setTimeout(300_000);
+  // Twitch's own ad in the second source keeps it from taking over, and Lurk then rightly hides the
+  // break (PGL's tournament stream, CI 2026-11-24): the step waits until Twitch shows none there.
+  await expect.poll(async () => (await ads()).twitchAd['popout'], { timeout: 180_000 }).toBe(false);
   const source = () => video().evaluate((element: HTMLVideoElement) => element.currentSrc);
   const before = await source();
   await planAd('embed', 30);
