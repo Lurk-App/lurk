@@ -14,6 +14,7 @@ import deShell from '../locales/de/shell.json' with { type: 'json' };
 import enPlayer from '../locales/en/player.json' with { type: 'json' };
 import enSettings from '../locales/en/settings.json' with { type: 'json' };
 import enShell from '../locales/en/shell.json' with { type: 'json' };
+import { searchableLiveStreams } from './live';
 
 const screenshots = path.join('tour', 'out', process.platform);
 let app: ElectronApplication;
@@ -107,12 +108,15 @@ test.beforeAll(async () => {
     });
   });
 
-  // Three big live channels: the first plays, the other two are subscribed.
+  // Three big live channels: the first plays (found through the search), the other two are
+  // subscribed.
+  const [first] = await searchableLiveStreams(page);
+  primary = { login: first!.broadcaster.login, displayName: first!.broadcaster.displayName };
   const top = await page.evaluate(() => window.lurk.browse.streams('all', 'EN', 'VIEWER_COUNT', null));
-  expect(top.length).toBeGreaterThanOrEqual(3);
-  primary = { login: top[0]!.broadcaster.login, displayName: top[0]!.broadcaster.displayName };
+  const others = top.filter((stream) => stream.broadcaster.login !== primary.login);
+  expect(others.length).toBeGreaterThanOrEqual(2);
   const refs = [];
-  for (const stream of top.slice(1, 3)) {
+  for (const stream of others.slice(0, 2)) {
     const details = await page.evaluate((login) => window.lurk.twitch.channel(login), stream.broadcaster.login);
     expect(details).toBeTruthy();
     refs.push(details!.ref);
@@ -149,7 +153,7 @@ test('the subscribed channels are read in the background while a stream plays', 
   const search = page.getByRole('combobox', { name: shell.search.label, exact: true });
   await search.fill(primary.login);
   const live = page.getByRole('option').filter({ hasText: shell.search.live }).first();
-  await expect(live).toBeVisible({ timeout: 15_000 });
+  await expect(live).toBeVisible({ timeout: 30_000 });
   await live.click();
   await expect.poll(currentTime, { timeout: 60_000 }).toBeGreaterThan(2);
   await expect

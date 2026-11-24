@@ -42,7 +42,10 @@ test.beforeAll(async () => {
   const top = await page.evaluate(() => window.lurk.twitch.top(8));
   let chosen = top[0]!;
   for (const stream of top) {
-    const archive = await page.evaluate((name) => window.lurk.twitch.videos(name, 'ARCHIVE'), stream.login);
+    // Twitch now and then answers a channel's videos with "service error": the next one, then.
+    const archive = await page
+      .evaluate((name) => window.lurk.twitch.videos(name, 'ARCHIVE'), stream.login)
+      .catch(() => []);
     if (archive.length >= 3) {
       chosen = stream;
       break;
@@ -98,10 +101,9 @@ test('the kinds switch the videos', async () => {
     'aria-checked',
     'true',
   );
-  await expect(
-    front().locator('.video-tile').or(front().getByText(browse.channel.empty.HIGHLIGHT)).first(),
-    // Twitch's video lists are sometimes slow; the step is about switching, not speed.
-  ).toBeVisible({ timeout: 35_000 });
+  // Tiles, "no highlights", or the failure view when Twitch answers "service error" (it does now
+  // and then): the step is about switching, not about Twitch's lists or their speed.
+  await expect(front().locator('.video-tile, .empty-state').first()).toBeVisible({ timeout: 35_000 });
   await front().getByRole('radio', { name: browse.channel.kind.ARCHIVE }).click();
   await expect(front().locator('.video-tile').first()).toBeVisible({ timeout: 35_000 });
 });

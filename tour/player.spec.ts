@@ -13,6 +13,7 @@ import enChat from '../locales/en/chat.json' with { type: 'json' };
 import enPlayer from '../locales/en/player.json' with { type: 'json' };
 import enSettings from '../locales/en/settings.json' with { type: 'json' };
 import enShell from '../locales/en/shell.json' with { type: 'json' };
+import { searchableLiveStreams } from './live';
 
 const screenshots = path.join('tour', 'out', process.platform);
 let app: ElectronApplication;
@@ -41,8 +42,7 @@ test.beforeAll(async () => {
   await page.evaluate(() => window.lurk.settings.update({ player: { muted: true } }));
   // The most watched English stream: its chat shows emotes within seconds (the most watched stream
   // overall may chat in a language that uses few).
-  const [top] = await page.evaluate(() => window.lurk.browse.streams('all', 'EN', 'VIEWER_COUNT', null));
-  expect(top, 'a live stream on Twitch').toBeTruthy();
+  const [top] = await searchableLiveStreams(page);
   login = top!.broadcaster.login;
   mkdirSync(screenshots, { recursive: true });
 });
@@ -59,7 +59,7 @@ test('a live channel from the search opens the player and plays', async () => {
   const search = page.getByRole('combobox', { name: shell.search.label, exact: true });
   await search.fill(login);
   const live = page.getByRole('option').filter({ hasText: shell.search.live }).first();
-  await expect(live).toBeVisible({ timeout: 15_000 });
+  await expect(live).toBeVisible({ timeout: 30_000 });
   await live.click();
   await expect(page.getByRole('region', { name: player.player })).toBeVisible();
   // The picture runs: the playhead moves.

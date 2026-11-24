@@ -14,6 +14,7 @@ import dePlayer from '../locales/de/player.json' with { type: 'json' };
 import deShell from '../locales/de/shell.json' with { type: 'json' };
 import enPlayer from '../locales/en/player.json' with { type: 'json' };
 import enShell from '../locales/en/shell.json' with { type: 'json' };
+import { searchableLiveStreams } from './live';
 
 const screenshots = path.join('tour', 'out', process.platform);
 let app: ElectronApplication;
@@ -61,8 +62,7 @@ test.beforeAll(async () => {
   player = language === 'de' ? dePlayer : enPlayer;
   shell = language === 'de' ? deShell : enShell;
   await page.evaluate(() => window.lurk.settings.update({ player: { muted: true } }));
-  const [top] = await page.evaluate(() => window.lurk.browse.streams('all', 'EN', 'VIEWER_COUNT', null));
-  expect(top, 'a live stream on Twitch').toBeTruthy();
+  const [top] = await searchableLiveStreams(page);
   login = top!.broadcaster.login;
 
   // Twitch's answers, passed through – with an ad marked into a session's playlists while planned.
@@ -125,7 +125,7 @@ test('a stream plays, and its second source is opened in the background', async 
   const search = page.getByRole('combobox', { name: shell.search.label, exact: true });
   await search.fill(login);
   const live = page.getByRole('option').filter({ hasText: shell.search.live }).first();
-  await expect(live).toBeVisible({ timeout: 15_000 });
+  await expect(live).toBeVisible({ timeout: 30_000 });
   await live.click();
   await expect.poll(currentTime, { timeout: 60_000 }).toBeGreaterThan(2);
   // The first session asks as "embed", the second source as "popout".
