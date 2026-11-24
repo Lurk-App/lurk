@@ -200,6 +200,8 @@ describe('the window and the client', () => {
 
   it('never acts as Twitch’s own web player', () => {
     expect(lurkTwitchClientId).not.toBe(twitchWebClientId);
+    // Twitch's client ids: 30 lowercase letters and digits.
+    expect(lurkTwitchClientId).toMatch(/^[a-z0-9]{30}$/);
     const source = readFileSync('src/main/followsImport.ts', 'utf8');
     expect(source).not.toContain('twitchWebClientId');
     expect(source).not.toContain('kimne78');
