@@ -7,9 +7,11 @@ import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import deBrowse from '../locales/de/browse.json' with { type: 'json' };
+import deCommon from '../locales/de/common.json' with { type: 'json' };
 import deSettings from '../locales/de/settings.json' with { type: 'json' };
 import deShell from '../locales/de/shell.json' with { type: 'json' };
 import enBrowse from '../locales/en/browse.json' with { type: 'json' };
+import enCommon from '../locales/en/common.json' with { type: 'json' };
 import enSettings from '../locales/en/settings.json' with { type: 'json' };
 import enShell from '../locales/en/shell.json' with { type: 'json' };
 
@@ -18,6 +20,7 @@ let app: ElectronApplication;
 let page: Page;
 let dataDir: string;
 let browse: typeof enBrowse;
+let common: typeof enCommon;
 let shell: typeof enShell;
 let settingsText: typeof enSettings;
 let login: string;
@@ -25,7 +28,7 @@ let displayName: string;
 
 // Twitch's video lists and thumbnails are sometimes slow (measured: with and without the network
 // filter alike): one more try of the whole file before it counts as failed.
-test.describe.configure({ mode: 'serial', timeout: 120_000, retries: 1 });
+test.describe.configure({ mode: 'serial', timeout: 180_000, retries: 1 });
 
 test.beforeAll(async () => {
   dataDir = mkdtempSync(path.join(os.tmpdir(), 'lurk-tour-'));
@@ -34,6 +37,7 @@ test.beforeAll(async () => {
   await expect(page.getByRole('navigation')).toBeVisible();
   const language = await page.evaluate(() => document.documentElement.lang);
   browse = language === 'de' ? deBrowse : enBrowse;
+  common = language === 'de' ? deCommon : enCommon;
   shell = language === 'de' ? deShell : enShell;
   settingsText = language === 'de' ? deSettings : enSettings;
   await page.evaluate(() => window.lurk.settings.update({ player: { muted: true } }));
@@ -64,6 +68,27 @@ test.afterAll(async () => {
 const front = () => page.locator('.page-layer:not(.is-covered)');
 const video = () => page.locator('.player-page video.stage-video:not(.stage-clip)');
 
+/**
+ * The archive's tiles. Twitch's video list answers "service error" now and then (on the GitHub
+ * runners often, 2026-11-24); the failure view's "Erneut versuchen" asks again, as a person would.
+ */
+async function archiveTiles(): Promise<void> {
+  const tile = front().locator('.video-tile').first();
+  const retry = front().getByRole('button', { name: common.retry, exact: true });
+  for (let attempt = 0; attempt < 3; attempt++) {
+    await expect(tile.or(retry).first()).toBeVisible({ timeout: 35_000 });
+    if (await tile.isVisible()) return;
+    await retry.click();
+    // The failure stays on screen until an answer arrives (as on macOS).
+    const shown = await tile.waitFor({ timeout: 15_000 }).then(
+      () => true,
+      () => false,
+    );
+    if (shown) return;
+  }
+  await expect(tile).toBeVisible();
+}
+
 async function openChannel() {
   const search = page.getByRole('combobox', { name: shell.search.label, exact: true });
   await search.fill(`twitch.tv/${login}`);
@@ -80,7 +105,7 @@ test('a live channel shows its card and its past broadcasts', async () => {
     'aria-checked',
     'true',
   );
-  await expect(front().locator('.video-tile, .empty-state').first()).toBeVisible({ timeout: 20_000 });
+  await archiveTiles();
   // The pictures load lazily; the screenshot waits for the first ones.
   await expect
     .poll(
@@ -105,10 +130,15 @@ test('the kinds switch the videos', async () => {
   // and then): the step is about switching, not about Twitch's lists or their speed.
   await expect(front().locator('.video-tile, .empty-state').first()).toBeVisible({ timeout: 35_000 });
   await front().getByRole('radio', { name: browse.channel.kind.ARCHIVE }).click();
-  await expect(front().locator('.video-tile').first()).toBeVisible({ timeout: 35_000 });
+  await expect(front().getByRole('radio', { name: browse.channel.kind.ARCHIVE })).toHaveAttribute(
+    'aria-checked',
+    'true',
+  );
+  await archiveTiles();
 });
 
 test('a video resumes where it was left, and its tile shows how far', async () => {
+  await archiveTiles();
   const tile = front().locator('.video-tile').first();
   await tile.click();
   await expect(page.locator('.player-page')).toBeVisible();
