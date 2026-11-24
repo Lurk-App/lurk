@@ -676,7 +676,7 @@ export function PlayerPage({
 }
 
 function levelLabel(level: QualityLevel, t: (key: string) => string): string {
-  // Twitch's own name ("1080p60", "480p30"), as the macOS app shows it.
+  // Twitch's own name ("1080p60", "720p60", "480p"), as the macOS app shows it.
   const name = level.name ?? (level.height ? `${level.height}p` : 'audio_only');
   if (name === 'audio_only' || !level.height) return t('audioOnly');
   return `${name}${level.isSource ? ` (${t('source')})` : ''}`;

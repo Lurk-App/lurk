@@ -167,7 +167,8 @@ test('the shield opens its popover; Esc closes it; the link opens the tab', asyn
 
 test('the switch in the popover turns the blocker off and restarts the stream', async () => {
   await page.bringToFront();
-  await page.getByRole('region', { name: player.player }).hover();
+  // Near the stage's left edge: the popover may still be open over its middle (small windows).
+  await page.getByRole('region', { name: player.player }).hover({ position: { x: 24, y: 24 } });
   const shield = page.getByRole('button', { name: player.blocker.name, exact: true });
   if ((await shield.getAttribute('aria-expanded')) !== 'true') await shield.click();
   const popover = page.getByRole('dialog', { name: player.blocker.name });

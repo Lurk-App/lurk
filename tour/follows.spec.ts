@@ -25,6 +25,8 @@ let browse: typeof enBrowse;
 let follows: typeof enFollows;
 let shell: typeof enShell;
 let savedClipboard = '';
+/** The last step quits the app itself, so every file is written and none is locked (Windows). */
+let quit = false;
 
 type Scenario = 'success' | 'expired' | 'denied' | 'empty' | 'late';
 interface Seen {
@@ -168,9 +170,15 @@ test.beforeAll(async () => {
   mkdirSync(screenshots, { recursive: true });
 });
 
+async function quitApp(): Promise<void> {
+  if (quit || !app) return;
+  quit = true;
+  await app.evaluate(({ clipboard }, text) => clipboard.writeText(text), savedClipboard);
+  await app.close();
+}
+
 test.afterAll(async () => {
-  await app?.evaluate(({ clipboard }, text) => clipboard.writeText(text), savedClipboard);
-  await app?.close();
+  await quitApp();
   rmSync(dataDir, { recursive: true, force: true });
 });
 
@@ -313,9 +321,10 @@ test('"Fenster schließen" is in the menu, and the sign-in leaves no trace on di
   });
   expect(hasClose).toBe(true);
   await importWindow.close();
-  // Give the stores a moment to write, then search every file of the data folder.
+  // Quit, so the stores have written and Chromium holds no file locked (Windows refuses to read a
+  // locked one), then search every file of the data folder.
   await page.evaluate(() => window.lurk.settings.update({ player: { muted: true } }));
-  await new Promise((resolve) => setTimeout(resolve, 2000));
+  await quitApp();
   const files: string[] = [];
   const walk = (folder: string) => {
     for (const name of readdirSync(folder)) {

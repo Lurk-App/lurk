@@ -125,8 +125,8 @@ test('the bar shows quality and hides after a while', async () => {
   await expect(quality).toBeVisible();
   await expect(quality).toContainText(player.auto);
   await expect(quality).toHaveAttribute('aria-haspopup', 'menu');
-  // Twitch's own variant names: "720p60", "480p30" …
-  await expect(quality).toContainText(/\d{3,4}p\d{2}|audio|Audio/);
+  // Twitch's own variant names: "1080p60", "720p60", "480p" (30 fps carries no number) …
+  await expect(quality).toContainText(/\d{3,4}p|audio|Audio/);
   await page.waitForTimeout(500);
   await page.screenshot({ path: path.join(screenshots, 'player-dark.png') });
   await page.mouse.move(5, 5);
