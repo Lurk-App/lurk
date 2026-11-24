@@ -95,6 +95,32 @@ When a service changes something and Lurk breaks (a stream no longer plays, the 
 ads come through), use the issue form "A service changed something". Note the time and the
 channel – these changes are often short-lived or regional.
 
+## Releases
+
+GitHub Actions builds every release (`.github/workflows/release.yml`), never a personal computer.
+
+1. In one pull request, set the version and close its changelog section:
+   - `npm version 0.1.0 --no-git-tag-version` sets it in `package.json` and `package-lock.json`;
+   - in `CHANGELOG.md`, `## [Unreleased]` becomes `## [0.1.0] - <date>`, with a new, empty
+     `## [Unreleased]` above it.
+2. Once that is on `main` and CI is green there, tag the commit and push the tag:
+
+   ```bash
+   git tag v0.1.0
+   ```
+
+   ```bash
+   git push origin v0.1.0
+   ```
+
+3. The workflow checks that the tag matches `package.json`, builds the files on macOS, Windows and
+   Linux, and creates a **draft** release with them, `SHA256SUMS.txt`, and the notes from
+   `.github/release-notes.md` followed by the version's changelog section. Versions before 1.0 are
+   marked as pre-releases.
+4. Read the draft, try the files on the systems you have, then publish it.
+
+The files are not signed yet; the notes explain the first start on each system.
+
 ## Pull requests
 
 - One topic per pull request. Small is easier to review.

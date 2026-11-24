@@ -1,0 +1,111 @@
+# A tag "v<version>" builds Lurk's installation files on real macOS, Windows and Linux machines and
+# puts them, with SHA-256 checksums and notes in German and English, into a draft release. Nothing
+# is published by itself: the draft is read and published by hand (see CONTRIBUTING.md, "Releases").
+# A pull request that changes this workflow, the notes or the packaging runs it without the draft.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  pull_request:
+    paths:
+      - .github/workflows/release.yml
+      - .github/release-notes.md
+      - electron-builder.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  package:
+    name: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: The tag names the version in package.json
+        if: github.ref_type == 'tag'
+        shell: bash
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          if [ "$GITHUB_REF_NAME" != "v$version" ]; then
+            echo "::error::The tag $GITHUB_REF_NAME does not match the version $version in package.json."
+            exit 1
+          fi
+      - run: npm ci
+      - name: Download Electron
+        run: node node_modules/electron/install.js
+      # The tour ran on main for this commit; it needs Twitch, the release must not.
+      - run: npm run check
+      - run: npm run build
+      - name: Package (unsigned)
+        run: npx electron-builder --publish never
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-${{ runner.os }}
+          path: |
+            release/*.dmg
+            release/*.exe
+            release/*.AppImage
+          if-no-files-found: error
+          retention-days: 7
+
+  release:
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      # Only to create the draft; a pull request's run never gets that far.
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: release-*
+          path: files
+          merge-multiple: true
+      - name: Checksums
+        working-directory: files
+        run: |
+          sha256sum -- * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+      - name: Notes
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          # A tag takes its own section of CHANGELOG.md; a pull request shows "Unreleased".
+          if [ "$GITHUB_REF_TYPE" = tag ]; then section="$version"; else section=Unreleased; fi
+          awk -v section="[$section]" '
+            index($0, "## " section) == 1 { found = 1; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' CHANGELOG.md > changes.md
+          if [ "$GITHUB_REF_TYPE" = tag ] && ! grep -q '[^[:space:]]' changes.md; then
+            echo "::error::CHANGELOG.md has no section \"## [$section]\"."
+            exit 1
+          fi
+          { sed "s/{{version}}/$version/g" .github/release-notes.md; echo; cat changes.md; } > notes.md
+          cat notes.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Draft release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          # Before 1.0 every version is a preview.
+          preview=()
+          case "$version" in 0.*) preview=(--prerelease) ;; esac
+          gh release create "$GITHUB_REF_NAME" files/* \
+            --draft "${preview[@]}" --verify-tag \
+            --title "Lurk $version" \
+            --notes-file notes.md

@@ -2,6 +2,8 @@
 appId: app.lurk.desktop
 productName: Lurk
 copyright: Copyright © Lurk contributors
+# Names the system and the architecture, so the release lists one file per download.
+artifactName: ${productName}-${version}-${os}-${arch}.${ext}
 directories:
   output: release
   buildResources: build
