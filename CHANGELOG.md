@@ -19,6 +19,7 @@ All notable changes to Lurk are listed here. The format follows
 - Release builds: a version tag builds the installation files for macOS (Apple chip and Intel),
   Windows and Linux on GitHub Actions and puts them into a draft preview release, with SHA-256
   checksums and notes in German and English. The file names name the system and the architecture.
+  On a Mac the preview installs as "Lurk Preview", beside the native macOS app "Lurk".
 - The main window: sidebar with search, navigation and settings, page header, title bar per
   system (macOS inset, Windows and Linux with the system's own).
 - Search with suggestions from Twitch while typing, keyboard control, and pasted twitch.tv links.

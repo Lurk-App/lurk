@@ -35,6 +35,21 @@ mac:
   # Unsigned until there is a decision about the Apple Developer Program (see the plan).
   identity: null
 
+# Until 1.0 the DMG holds the app as "Lurk Preview.app": dragged into Applications, it sits beside
+# the native macOS app "Lurk.app" instead of replacing it (its data is kept apart too, see
+# src/main/index.ts). Inside, it still calls itself Lurk. Renaming a bundle keeps its signature.
+dmg:
+  title: Lurk Preview ${version}
+  contents:
+    - x: 130
+      y: 220
+      type: file
+      name: Lurk Preview.app
+    - x: 410
+      y: 220
+      type: link
+      path: /Applications
+
 win:
   target:
     - target: nsis

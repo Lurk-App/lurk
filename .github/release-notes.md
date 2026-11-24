@@ -18,11 +18,10 @@ files are in `SHA256SUMS.txt`.
 
 Lurk ist noch nicht signiert. Deshalb fragt das System beim ersten Start nach:
 
-- **macOS:** Ziehe Lurk aus dem Fenster der DMG-Datei in einen Ordner und öffne es. macOS lehnt den
-  ersten Start ab. Öffne dann Systemeinstellungen → Datenschutz & Sicherheit und wähle bei Lurk
-  „Dennoch öffnen“. **Nutzt du schon die macOS-App Lurk?** Beide heißen „Lurk“: Ziehst du die
-  Vorschau in „Programme“, ersetzt sie die macOS-App. Lege die Vorschau in einen anderen Ordner.
-  Ihre Daten liegen getrennt von denen der macOS-App.
+- **macOS:** Ziehe „Lurk Preview“ aus dem Fenster der DMG-Datei in „Programme“ und öffne es. macOS
+  lehnt den ersten Start ab. Öffne dann Systemeinstellungen → Datenschutz & Sicherheit und wähle
+  „Dennoch öffnen“. Die Vorschau steht neben der macOS-App „Lurk“, ersetzt sie nicht und hat ihre
+  eigenen Daten.
 - **Windows:** SmartScreen meldet „Der Computer wurde durch Windows geschützt“. Wähle „Weitere
   Informationen“ und dann „Trotzdem ausführen“.
 - **Linux:** Mache die Datei ausführbar (`chmod +x Lurk-*.AppImage`) und starte sie.
@@ -31,11 +30,9 @@ Lurk ist noch nicht signiert. Deshalb fragt das System beim ersten Start nach:
 
 Lurk is not signed yet, so the system asks on the first start:
 
-- **macOS:** Drag Lurk from the DMG window into a folder and open it. macOS refuses the first
-  start. Then open System Settings → Privacy & Security and choose "Open Anyway" for Lurk.
-  **Already using the macOS app Lurk?** Both are called "Lurk": dragged into "Applications", the
-  preview replaces the macOS app. Put the preview into another folder. Its data is kept apart from
-  the macOS app's.
+- **macOS:** Drag "Lurk Preview" from the DMG window into "Applications" and open it. macOS
+  refuses the first start. Then open System Settings → Privacy & Security and choose "Open
+  Anyway". The preview sits beside the macOS app "Lurk", does not replace it, and has its own data.
 - **Windows:** SmartScreen says "Windows protected your PC". Choose "More info", then "Run
   anyway".
 - **Linux:** Make the file executable (`chmod +x Lurk-*.AppImage`) and start it.
