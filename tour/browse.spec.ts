@@ -77,7 +77,12 @@ test('the content type, sort and language change the context line and the list',
 test('a tag from the suggestions filters and shows as a capsule', async () => {
   const field = front().getByRole('combobox', { name: browse.tag.label, exact: true });
   await field.fill('Deutsch');
-  const option = front().getByRole('option').first();
+  // A tag in plain letters: Twitch suggests tags in decorative letters too ("DᴇᴜᴛꜱᴄʜEɴɢʟɪꜱᴄʜ"), and
+  // finds no stream for them (CI, 2026-11-24).
+  const option = front()
+    .getByRole('option')
+    .filter({ hasText: /^\s*[A-Za-zÄÖÜäöüß0-9]+\s*$/ })
+    .first();
   await expect(option).toBeVisible({ timeout: 15_000 });
   const tag = (await option.textContent())!.trim();
   await option.click();

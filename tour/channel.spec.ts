@@ -14,6 +14,7 @@ import enBrowse from '../locales/en/browse.json' with { type: 'json' };
 import enCommon from '../locales/en/common.json' with { type: 'json' };
 import enSettings from '../locales/en/settings.json' with { type: 'json' };
 import enShell from '../locales/en/shell.json' with { type: 'json' };
+import { playing } from './live';
 
 const screenshots = path.join('tour', 'out', process.platform);
 let app: ElectronApplication;
@@ -142,9 +143,7 @@ test('a video resumes where it was left, and its tile shows how far', async () =
   const tile = front().locator('.video-tile').first();
   await tile.click();
   await expect(page.locator('.player-page')).toBeVisible();
-  await expect
-    .poll(() => video().evaluate((element: HTMLVideoElement) => element.currentTime), { timeout: 30_000 })
-    .toBeGreaterThan(1);
+  await playing(page, 1);
   await video().evaluate((element: HTMLVideoElement) => {
     element.currentTime = 300;
   });
@@ -155,18 +154,14 @@ test('a video resumes where it was left, and its tile shows how far', async () =
   await page.getByRole('button', { name: shell.back }).click();
   await expect(front().locator('.video-tile').first().locator('.progress-strip')).toBeVisible({ timeout: 10_000 });
   await front().locator('.video-tile').first().click();
-  await expect
-    .poll(() => video().evaluate((element: HTMLVideoElement) => element.currentTime), { timeout: 30_000 })
-    .toBeGreaterThan(290);
+  await playing(page, 290);
   await page.getByRole('button', { name: shell.back }).click();
 });
 
 test('the live card plays the stream', async () => {
   await front().getByRole('button', { name: browse.channel.watchNow }).click();
   await expect(page.locator('.player-page')).toBeVisible();
-  await expect
-    .poll(() => video().evaluate((element: HTMLVideoElement) => element.currentTime), { timeout: 45_000 })
-    .toBeGreaterThan(0);
+  await playing(page, 0);
   await page.getByRole('button', { name: shell.back }).click();
 });
 
