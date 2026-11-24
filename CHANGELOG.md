@@ -6,6 +6,8 @@ All notable changes to Lurk are listed here. The format follows
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-24
+
 ### Added
 
 - Foundation of the cross-platform app: Electron with React and TypeScript, served from its own

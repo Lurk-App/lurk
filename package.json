@@ -1,7 +1,7 @@
 {
   "name": "lurk",
   "productName": "Lurk",
-  "version": "0.1.0-dev",
+  "version": "0.1.0",
   "private": true,
   "description": "Watch Twitch without an account and without tracking.",
   "license": "GPL-3.0-or-later",
