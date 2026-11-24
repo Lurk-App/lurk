@@ -51,7 +51,8 @@ All notable changes to Lurk are listed here. The format follows
   subscribed channel goes live.
 - "Von Twitch übernehmen": subscribe to the channels you follow on Twitch. You confirm a code in your
   own browser; Lurk reads only whom you follow, ends the sign-in at Twitch at once and asks before it
-  subscribes.
+  subscribes. Offered on the empty Abos page beside "Streams entdecken" and in the "Übertragen" menu;
+  the window comes to the front when Lurk has a question.
 - "Fenster schließen" (⌘W / Ctrl+W) in the menu.
 - The ad blocker as on macOS, modelled on uBlock Origin: filters in uBlock syntax (servers,
   exceptions, `$important`, request types, `m3u-prune` for playlists), a network filter for every
