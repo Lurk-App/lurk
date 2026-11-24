@@ -1,6 +1,7 @@
 // Tour, part "window": the main window and the settings window, clicked and typed like a user,
 // with screenshots per system in light and dark (tour/out/<platform>/, uploaded by CI).
-// The search uses a pasted twitch.tv link and the "all results" entry, so it needs no network.
+// The search opens a pasted twitch.tv link and the "all results" page. Both ask Twitch, and the tour
+// presses "Erneut versuchen" when Twitch fails them.
 
 import { _electron as electron, expect, test, type ElectronApplication, type Page } from '@playwright/test';
 import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
@@ -12,6 +13,7 @@ import deShell from '../locales/de/shell.json' with { type: 'json' };
 import enBrowse from '../locales/en/browse.json' with { type: 'json' };
 import enSettings from '../locales/en/settings.json' with { type: 'json' };
 import enShell from '../locales/en/shell.json' with { type: 'json' };
+import { channelShown, front, shown } from './live';
 
 const screenshots = path.join('tour', 'out', process.platform);
 // One app for all steps: a failing step skips the rest instead of starting a fresh app.
@@ -64,26 +66,34 @@ test('switches pages from the sidebar; a second click returns to the root', asyn
   await nav.getByRole('button', { name: shell.nav.browse }).click();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(shell.pages.browse);
   await expect(nav.getByRole('button', { name: shell.nav.browse })).toHaveAttribute('aria-current', 'page');
-  await expect(page.getByRole('button', { name: shell.back })).toBeDisabled();
+  // Exact: Entdecken's live titles may hold the word too ("I'M BACK").
+  await expect(page.getByRole('button', { name: shell.back, exact: true })).toBeDisabled();
 });
 
 test('search: a twitch.tv link opens the channel, Back returns', async () => {
+  // The channel may be asked again up to three times (channelShown).
+  test.setTimeout(180_000);
   const search = page.getByRole('combobox', { name: shell.search.label, exact: true });
   await search.fill('twitch.tv/gronkh');
   const option = page.getByRole('option').first();
   await expect(option).toContainText(shell.search.linkChannel.replace('{{login}}', 'gronkh'));
   await search.press('Enter');
-  // The channel page (part 5b): Twitch's display name, then the avatar beside the header.
+  // The channel page (part 5b): Twitch's display name, then the avatar beside the header. Twitch now
+  // and then answers the channel with "service error" (CI, 2026-11-24); "Erneut versuchen" asks again.
+  await channelShown(page);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(/gronkh/i, { timeout: 15_000 });
   await expect(page.locator('.page-layer:not(.is-covered) .art-head')).toBeVisible();
   await expect(search).toHaveValue('');
   // On a page above the sections, no navigation entry claims to be the current page.
   await expect(page.locator('nav [aria-current]')).toHaveCount(0);
-  await page.getByRole('button', { name: shell.back }).click();
+  // Exact: the live title, the game or a video's title may hold the word too.
+  await page.getByRole('button', { name: shell.back, exact: true }).click();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(shell.pages.browse);
 });
 
 test('search: arrow keys, Escape and "all results"', async () => {
+  // The search may be asked again up to three times (shown).
+  test.setTimeout(150_000);
   const search = page.getByRole('combobox', { name: shell.search.label, exact: true });
   await search.fill('zzzlurktour');
   await expect(search).toHaveAttribute('aria-expanded', 'true');
@@ -99,10 +109,11 @@ test('search: arrow keys, Escape and "all results"', async () => {
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     browse.search.title.replace('{{term}}', 'zzzlurktour'),
   );
-  // Twitch's search is fuzzy: whatever it finds, the channels section is there.
-  await expect(page.getByRole('heading', { level: 2, name: new RegExp(browse.search.channelsSection) })).toBeVisible({
-    timeout: 15_000,
-  });
+  // Twitch's search is fuzzy: whatever it finds, the channels section is there. When Twitch fails
+  // both halves of the search, Lurk shows its failure view; "Erneut versuchen" asks again.
+  const channels = front(page).getByRole('heading', { level: 2, name: new RegExp(browse.search.channelsSection) });
+  await shown(page, channels, 15_000);
+  await expect(channels).toBeVisible();
 });
 
 test('the sidebar can be hidden and shown again', async () => {

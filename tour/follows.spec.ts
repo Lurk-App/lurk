@@ -15,6 +15,7 @@ import deShell from '../locales/de/shell.json' with { type: 'json' };
 import enBrowse from '../locales/en/browse.json' with { type: 'json' };
 import enFollows from '../locales/en/follows.json' with { type: 'json' };
 import enShell from '../locales/en/shell.json' with { type: 'json' };
+import { askAgain } from './live';
 
 const screenshots = path.join('tour', 'out', process.platform);
 const clientId = 'lurktourclient0001';
@@ -67,11 +68,18 @@ test.beforeAll(async () => {
   follows = language === 'de' ? deFollows : enFollows;
   shell = language === 'de' ? deShell : enShell;
   await page.evaluate(() => window.lurk.settings.update({ player: { muted: true } }));
-  // Three real channels, so the Abos page can show them with their live status afterwards.
-  const top = await page.evaluate(() => window.lurk.twitch.top(3));
+  // Three real channels, so the Abos page can show them with their live status afterwards. The steps
+  // need no other answer from the real Twitch (a failed live status still lists the channels), and
+  // Twitch now and then answers "service error" (CI, 2026-11-24): each call is asked again, and a
+  // channel Twitch does not answer gives way to the next.
+  test.setTimeout(240_000);
+  const top = await askAgain(() => page.evaluate(() => window.lurk.twitch.top(10)));
   const channels = [];
   for (const stream of top) {
-    const details = await page.evaluate((login) => window.lurk.twitch.channel(login), stream.login);
+    if (channels.length === 3) break;
+    const details = await askAgain(() =>
+      page.evaluate((login) => window.lurk.twitch.channel(login), stream.login),
+    ).catch(() => null);
     if (details) channels.push(details.ref);
   }
   expect(channels).toHaveLength(3);

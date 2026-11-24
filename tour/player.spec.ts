@@ -13,7 +13,7 @@ import enChat from '../locales/en/chat.json' with { type: 'json' };
 import enPlayer from '../locales/en/player.json' with { type: 'json' };
 import enSettings from '../locales/en/settings.json' with { type: 'json' };
 import enShell from '../locales/en/shell.json' with { type: 'json' };
-import { playFromSearch, searchableLiveStreams } from './live';
+import { channelShown, playFromSearch, searchableLiveStreams } from './live';
 
 const screenshots = path.join('tour', 'out', process.platform);
 let app: ElectronApplication;
@@ -137,6 +137,9 @@ test('the bar shows quality and hides after a while', async () => {
   await expect(quality).toContainText(/\d{3,4}p|audio|Audio/);
   await page.waitForTimeout(500);
   await page.screenshot({ path: path.join(screenshots, 'player-dark.png') });
+  // Focus in the bar keeps it open (checked below). The chat toggle clicked earlier may still have it
+  // once the settings window hands the focus back (seen locally, 2026-11-24).
+  await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
   await page.mouse.move(5, 5);
   await expect(page.locator('.control-bar')).not.toHaveClass(/is-visible/, { timeout: 5_000 });
   // Hidden, the bar is out of the Tab order; focus on the stage brings it back.
@@ -166,10 +169,14 @@ test('fullscreen shows the cinema layout, Escape leaves it', async () => {
 });
 
 test('the info strip leads to the channel page, Back returns to the player', async () => {
+  // The channel page asks Twitch for the channel again; "Erneut versuchen" asks once more when
+  // Twitch answers "service error" (as the player's did, CI 2026-11-24), up to three times.
+  test.setTimeout(180_000);
   await page.locator('.info-strip .link').first().click();
   // The channel page (part 5b): avatar beside the header.
-  await expect(page.locator('.page-layer:not(.is-covered) .art-head')).toBeVisible({ timeout: 15_000 });
-  await page.getByRole('button', { name: shell.back }).click();
+  await channelShown(page);
+  // Exact: the live title ("WE'RE BACK") or a video's title may contain the word too.
+  await page.getByRole('button', { name: shell.back, exact: true }).click();
   await expect(page.getByRole('region', { name: player.player })).toBeVisible();
 });
 

@@ -22,13 +22,15 @@ let player: typeof enPlayer;
 let login: string;
 
 interface TourAds {
-  /** Which sessions get the ad: every one, or only the first ("embed"). */
-  sessions: 'all' | 'embed';
+  /** Which sessions get the ad: every one, or only one ("embed" the first, "popout" the second source). */
+  sessions: 'all' | 'embed' | 'popout';
   /** The ad's window (ms since epoch); 0 while none is planned. */
   start: number;
   end: number;
   /** player_type of each usher request, in order. */
   ushers: string[];
+  /** When the player's newest session was answered (its "embed" usher request; ms since epoch). */
+  startedAt: number;
   /** Media playlist (without query) → player_type of its session. */
   sessionOf: Record<string, string>;
   /** player_type → whether its latest playlist carried Twitch's own ad (before the tour's). */
@@ -72,7 +74,15 @@ test.beforeAll(async () => {
 
   // Twitch's answers, passed through – with an ad marked into a session's playlists while planned.
   await app.evaluate(({ net, session }) => {
-    const state: TourAds = { sessions: 'all', start: 0, end: 0, ushers: [], sessionOf: {}, twitchAd: {} };
+    const state: TourAds = {
+      sessions: 'all',
+      start: 0,
+      end: 0,
+      ushers: [],
+      startedAt: 0,
+      sessionOf: {},
+      twitchAd: {},
+    };
     (globalThis as unknown as { tourAds: TourAds }).tourAds = state;
     const plain = (url: string) => url.split('?')[0]!;
     session.defaultSession.protocol.handle('https', async (request) => {
@@ -86,6 +96,7 @@ test.beforeAll(async () => {
         const token = url.searchParams.get('token') ?? '';
         const type = /"player_type":"(\w+)"/.exec(token)?.[1] ?? (state.ushers.length ? 'popout' : 'embed');
         state.ushers.push(type);
+        if (type === 'embed') state.startedAt = Date.now();
         for (const line of text.split('\n')) if (line.startsWith('https://')) state.sessionOf[plain(line)] = type;
         return new Response(text, { status: 200, headers });
       }
@@ -96,7 +107,7 @@ test.beforeAll(async () => {
           text.split('\n').some((line) => line.startsWith('#EXTINF:') && /,\S/.test(line) && !/,live\s*$/.test(line));
       }
       const now = Date.now();
-      const planned = state.end > now && (state.sessions === 'all' || type === 'embed');
+      const planned = state.end > now && (state.sessions === 'all' || type === state.sessions);
       if (!planned) return new Response(text, { status: 200, headers });
       // Segments from the ad's start on carry an ad title, with Twitch's ad marker on top.
       const lines = text.split('\n');
@@ -131,6 +142,25 @@ const video = () => page.locator('video.stage-video:not(.stage-clip)');
 const currentTime = () => video().evaluate((element: HTMLVideoElement) => element.currentTime);
 const banners = () => page.locator('.banners');
 
+/**
+ * Until Twitch shows no ad of its own in either session and Lurk hides nothing, so the next break is
+ * the tour's. On PGL's tournament stream (CI and locally, 2026-11-24) Twitch's ads came every few
+ * minutes: one in the second source keeps it from taking over, one already hidden absorbs the tour's
+ * break into itself (and Lurk rightly counts it once).
+ */
+async function twitchAdsOver(): Promise<void> {
+  await expect
+    .poll(
+      async () => {
+        const { twitchAd } = await ads();
+        const hiding = ((await banners().textContent()) ?? '').includes(player.midrollTitle);
+        return twitchAd['embed'] === false && twitchAd['popout'] === false && !hiding;
+      },
+      { timeout: 180_000, message: "Twitch's own ads to end" },
+    )
+    .toBe(true);
+}
+
 test('a stream plays, and its second source is opened in the background', async () => {
   await playFromSearch(page, login);
   await expect.poll(currentTime, { timeout: 60_000 }).toBeGreaterThan(2);
@@ -153,12 +183,19 @@ test('a stream plays, and its second source is opened in the background', async 
 
 test('with ads only in the first session, the stream goes on from the second source', async () => {
   test.setTimeout(300_000);
-  // Twitch's own ad in the second source keeps it from taking over, and Lurk then rightly hides the
-  // break (PGL's tournament stream, CI 2026-11-24): the step waits until Twitch shows none there.
-  await expect.poll(async () => (await ads()).twitchAd['popout'], { timeout: 180_000 }).toBe(false);
+  // Twitch's own ad in either session would decide the break instead of the tour (see twitchAdsOver).
+  await twitchAdsOver();
   const source = () => video().evaluate((element: HTMLVideoElement) => element.currentSrc);
   const before = await source();
-  await planAd('embed', 30);
+  // The ad goes into the session that plays: each switch of the player's newest session moves it
+  // to the other one. The log's newest entry marks what came before.
+  const { startedAt } = await ads();
+  const earlier = await page.evaluate(() => window.lurk.blocker.state());
+  const switches = earlier.entries.filter(
+    (entry) => entry.detail.kind === 'switch' && Date.parse(entry.at) >= startedAt,
+  ).length;
+  const mark = earlier.entries[0]?.id ?? 0;
+  await planAd(switches % 2 ? 'popout' : 'embed', 30);
   await expect(page.getByRole('status').filter({ hasText: player.sourceSwitched })).toBeVisible({ timeout: 30_000 });
   await page.screenshot({ path: path.join(screenshots, 'player-zweite-quelle.png') });
   expect(await source()).not.toBe(before);
@@ -166,14 +203,16 @@ test('with ads only in the first session, the stream goes on from the second sou
   const switched = await currentTime();
   await expect.poll(currentTime, { timeout: 20_000 }).toBeGreaterThan(switched + 1);
   const state = await page.evaluate(() => window.lurk.blocker.state());
-  expect(state.entries.some((entry) => entry.detail.kind === 'switch')).toBe(true);
+  // A switch for this ad, not an older one.
+  expect(state.entries.some((entry) => entry.detail.kind === 'switch' && entry.id > mark)).toBe(true);
   // Wait for the planned ad and the toast to pass before the next step.
   await expect.poll(async () => (await ads()).end < Date.now(), { timeout: 60_000 }).toBe(true);
   await expect(page.locator('.toast.is-visible')).toHaveCount(0, { timeout: 10_000 });
 });
 
 test('a mid-roll is hidden once it is reached, a clip plays, then the stream goes on', async () => {
-  test.setTimeout(300_000);
+  test.setTimeout(480_000);
+  await twitchAdsOver();
   const before = (await page.evaluate(() => window.lurk.blocker.state())).totals.adBreaks;
   const clip = page.locator('.stage-clip.is-visible');
   // A popular clip of the channel takes the stage (the dimmed preview until it plays). When Twitch
@@ -206,6 +245,8 @@ test('a mid-roll is hidden once it is reached, a clip plays, then the stream goe
 });
 
 test('without clips, the dimmed preview shows during the break', async () => {
+  test.setTimeout(300_000);
+  await twitchAdsOver();
   await page.evaluate(() => window.lurk.settings.update({ blocker: { adFillClips: false } }));
   await planAd('all', 30);
   await expect(banners()).toContainText(player.midrollTitle, { timeout: 40_000 });

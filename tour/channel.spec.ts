@@ -14,7 +14,8 @@ import enBrowse from '../locales/en/browse.json' with { type: 'json' };
 import enCommon from '../locales/en/common.json' with { type: 'json' };
 import enSettings from '../locales/en/settings.json' with { type: 'json' };
 import enShell from '../locales/en/shell.json' with { type: 'json' };
-import { playing } from './live';
+import type { LiveStream } from '../src/shared/models';
+import { askAgain, channelShown, playing } from './live';
 
 const screenshots = path.join('tour', 'out', process.platform);
 let app: ElectronApplication;
@@ -43,21 +44,41 @@ test.beforeAll(async () => {
   settingsText = language === 'de' ? deSettings : enSettings;
   await page.evaluate(() => window.lurk.settings.update({ player: { muted: true } }));
   // A big live channel with past broadcasts (asked first: the steps are about the page, not about
-  // whether a channel happens to keep its broadcasts).
-  const top = await page.evaluate(() => window.lurk.twitch.top(8));
-  let chosen = top[0]!;
-  for (const stream of top) {
+  // whether a channel happens to keep its broadcasts). The newest one, which the steps play, must be
+  // one anyone can watch: Twitch lists subscriber-only broadcasts too but answers their playlist with
+  // 403, and the broadcast still being recorded may be shorter than the 300 s the steps seek to.
+  // Lurk's own playback path decides it, so a broken one still fails here.
+  test.setTimeout(300_000);
+  const playable = async (stream: LiveStream): Promise<boolean> => {
     // Twitch now and then answers a channel's videos with "service error": the next one, then.
     const archive = await page
       .evaluate((name) => window.lurk.twitch.videos(name, 'ARCHIVE'), stream.login)
       .catch(() => []);
-    if (archive.length >= 3) {
-      chosen = stream;
-      break;
+    const newest = archive[0];
+    if (archive.length < 3 || !newest || newest.lengthSeconds < 600) return false;
+    const status = await page
+      .evaluate(async (id) => {
+        const url = await window.lurk.twitch.playback({ kind: 'vod', id });
+        return (await window.lurk.twitch.playlist(url)).status;
+      }, newest.id)
+      .catch(() => 0);
+    return status === 200;
+  };
+  let chosen: LiveStream | undefined;
+  // None of them now: Twitch is asked again a little later, as a person would refresh.
+  for (let round = 0; round < 2 && !chosen; round++) {
+    if (round > 0) await page.waitForTimeout(10_000);
+    const top = await askAgain(() => page.evaluate(() => window.lurk.twitch.top(8)));
+    for (const stream of top) {
+      if (await playable(stream)) {
+        chosen = stream;
+        break;
+      }
     }
   }
-  login = chosen.login;
-  displayName = chosen.displayName;
+  expect(chosen, 'a live channel whose newest past broadcast plays').toBeDefined();
+  login = chosen!.login;
+  displayName = chosen!.displayName;
   mkdirSync(screenshots, { recursive: true });
 });
 
@@ -90,18 +111,22 @@ async function archiveTiles(): Promise<void> {
   await expect(tile).toBeVisible();
 }
 
-async function openChannel() {
+/** Opens a channel through its twitch.tv link; "Erneut versuchen" when Twitch fails the channel. */
+async function openChannel(name = login) {
   const search = page.getByRole('combobox', { name: shell.search.label, exact: true });
-  await search.fill(`twitch.tv/${login}`);
+  await search.fill(`twitch.tv/${name}`);
   await search.press('Enter');
-  await expect(front().locator('.art-head')).toBeVisible({ timeout: 15_000 });
+  await channelShown(page);
 }
 
 test('a live channel shows its card and its past broadcasts', async () => {
+  // The channel and then its videos may each be asked again ("service error", CI 2026-11-24).
+  test.setTimeout(300_000);
   await openChannel();
   await expect(front().getByRole('heading', { level: 1 })).toHaveText(displayName);
   await expect(front().locator('.avatar-live')).toBeVisible();
-  await expect(front().getByRole('button', { name: browse.channel.watchNow })).toBeVisible();
+  // Exact names here and below: a live or video title may contain the words too.
+  await expect(front().getByRole('button', { name: browse.channel.watchNow, exact: true })).toBeVisible();
   await expect(front().getByRole('radio', { name: browse.channel.kind.ARCHIVE })).toHaveAttribute(
     'aria-checked',
     'true',
@@ -151,18 +176,29 @@ test('a video resumes where it was left, and its tile shows how far', async () =
     .poll(() => video().evaluate((element: HTMLVideoElement) => element.currentTime), { timeout: 30_000 })
     .toBeGreaterThan(300);
   // Leaving keeps the position.
-  await page.getByRole('button', { name: shell.back }).click();
+  await page.getByRole('button', { name: shell.back, exact: true }).click();
   await expect(front().locator('.video-tile').first().locator('.progress-strip')).toBeVisible({ timeout: 10_000 });
   await front().locator('.video-tile').first().click();
   await playing(page, 290);
-  await page.getByRole('button', { name: shell.back }).click();
+  await page.getByRole('button', { name: shell.back, exact: true }).click();
 });
 
 test('the live card plays the stream', async () => {
-  await front().getByRole('button', { name: browse.channel.watchNow }).click();
+  // The page from the first step still shows the Live banner, but the channel may have ended its
+  // stream since (as one did mid-tour, CI 2026-11-24); Lurk then rightly shows it offline. The tour
+  // then plays another live channel from its own page, as a person would.
+  const now = await askAgain(() => page.evaluate((name) => window.lurk.twitch.channel(name), login)).catch(() => null);
+  if (now && now.stream === null) {
+    test.setTimeout(300_000);
+    const top = await askAgain(() => page.evaluate(() => window.lurk.twitch.top(8)));
+    const other = top.find((stream) => stream.login !== login);
+    expect(other, 'another live channel').toBeDefined();
+    await openChannel(other!.login);
+  }
+  await front().getByRole('button', { name: browse.channel.watchNow, exact: true }).click();
   await expect(page.locator('.player-page')).toBeVisible();
   await playing(page, 0);
-  await page.getByRole('button', { name: shell.back }).click();
+  await page.getByRole('button', { name: shell.back, exact: true }).click();
 });
 
 test('the history lists both, filters and removes', async () => {

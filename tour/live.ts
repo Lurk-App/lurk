@@ -1,29 +1,102 @@
-// Live channels for the tour, chosen before the steps, and playback that asks Twitch again. Twitch's
-// answers differ by region and moment (on GitHub's machines the search sometimes lists a big live
-// channel as offline, and a channel or video now and then answers "service error"); the steps are
-// about Lurk, not about Twitch.
+// Live channels for the tour, chosen before the steps, and the ways a person asks Twitch again.
+// Twitch's answers differ by region and moment (on GitHub's machines the search sometimes lists a big
+// live channel as offline, and a channel, a list or a video now and then answers "service error" or
+// times out); the steps are about Lurk, not about Twitch. Each helper still fails when Lurk itself
+// shows nothing, the wrong thing, or no way to ask again.
 
-import { expect, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 import deBrowse from '../locales/de/browse.json' with { type: 'json' };
+import deCommon from '../locales/de/common.json' with { type: 'json' };
 import dePlayer from '../locales/de/player.json' with { type: 'json' };
 import deShell from '../locales/de/shell.json' with { type: 'json' };
 import enBrowse from '../locales/en/browse.json' with { type: 'json' };
+import enCommon from '../locales/en/common.json' with { type: 'json' };
 import enPlayer from '../locales/en/player.json' with { type: 'json' };
 import enShell from '../locales/en/shell.json' with { type: 'json' };
 import type { BrowseStream } from '../src/shared/browse';
 
-/** The most watched English streams that Twitch's search lists as live, most watched first. */
+const german = async (page: Page) => (await page.evaluate(() => document.documentElement.lang)) === 'de';
+
+/** The page in front; covered pages stay mounted, hidden and inert. */
+export const front = (page: Page): Locator => page.locator('.page-layer:not(.is-covered)');
+
+/**
+ * A setup call through Lurk's bridge, asked again when Twitch fails it ("service error", Lurk's 10 s
+ * timeout; CI 2026-11-24): up to three tries, `pause` apart. The last error is thrown.
+ */
+export async function askAgain<T>(call: () => Promise<T>, tries = 3, pause = 5_000): Promise<T> {
+  let last: unknown;
+  for (let attempt = 1; attempt <= tries; attempt++) {
+    try {
+      return await call();
+    } catch (error) {
+      last = error;
+      if (attempt < tries) await new Promise((resolve) => setTimeout(resolve, pause));
+    }
+  }
+  throw last;
+}
+
+/** The most watched English live streams (Entdecken's list), asked again when Twitch fails it. */
+export function liveStreams(page: Page): Promise<BrowseStream[]> {
+  return askAgain(() => page.evaluate(() => window.lurk.browse.streams('all', 'EN', 'VIEWER_COUNT', null)));
+}
+
+/**
+ * The most watched English streams that Twitch's search lists as live, most watched first. A search
+ * that Twitch did not answer, or answered without any channel, is asked once more; a channel the
+ * search lists as offline is Twitch's answer and is passed over.
+ */
 export async function searchableLiveStreams(page: Page, count = 1): Promise<BrowseStream[]> {
-  const top = await page.evaluate(() => window.lurk.browse.streams('all', 'EN', 'VIEWER_COUNT', null));
-  const chosen: BrowseStream[] = [];
-  for (const stream of top.slice(0, 12)) {
+  const top = (await liveStreams(page)).slice(0, 12);
+  const chosen = new Set<BrowseStream>();
+  const unanswered: BrowseStream[] = [];
+  const ask = async (stream: BrowseStream) => {
     const login = stream.broadcaster.login;
     const results = await page.evaluate((term) => window.lurk.twitch.search(term), login).catch(() => null);
-    if (results?.channels.some((channel) => channel.ref.login === login && channel.stream)) chosen.push(stream);
-    if (chosen.length === count) break;
+    if (results?.channels.some((channel) => channel.ref.login === login && channel.stream)) chosen.add(stream);
+    return results !== null && results.channels.length > 0;
+  };
+  for (const stream of top) {
+    if (chosen.size === count) break;
+    if (!(await ask(stream))) unanswered.push(stream);
   }
-  expect(chosen.length, "live streams that Twitch's search lists as live").toBe(count);
-  return chosen;
+  if (chosen.size < count && unanswered.length > 0) {
+    await page.waitForTimeout(10_000);
+    for (const stream of unanswered.slice(0, 4)) {
+      if (chosen.size === count) break;
+      await ask(stream);
+    }
+  }
+  expect(chosen.size, "live streams that Twitch's search lists as live").toBe(count);
+  return top.filter((stream) => chosen.has(stream));
+}
+
+/**
+ * Waits until `content` shows on the front page. When Twitch fails the page's request, Lurk shows its
+ * failure view with "Erneut versuchen"; the tour presses it, as a person would – up to three times.
+ * The failure may stay until Twitch answers again, or give way to a spinner meanwhile.
+ */
+export async function shown(page: Page, content: Locator, timeout = 20_000): Promise<void> {
+  const common = (await german(page)) ? deCommon : enCommon;
+  const retry = front(page).getByRole('button', { name: common.retry, exact: true });
+  for (let attempt = 0; attempt < 3; attempt++) {
+    await expect(content.or(retry).first()).toBeVisible({ timeout });
+    if (await content.first().isVisible()) return;
+    await retry.click();
+    const answered = await content
+      .first()
+      .waitFor({ timeout: 15_000 })
+      .then(() => true)
+      .catch(() => false);
+    if (answered) return;
+  }
+  await expect(content.first()).toBeVisible({ timeout });
+}
+
+/** Waits for the channel page in front: its header, asked again when Twitch fails the channel. */
+export async function channelShown(page: Page): Promise<void> {
+  await shown(page, front(page).locator('.art-head'));
 }
 
 /**
@@ -32,7 +105,7 @@ export async function searchableLiveStreams(page: Page, count = 1): Promise<Brow
  * types the channel's twitch.tv link and plays it from the channel page, as a person would.
  */
 export async function playFromSearch(page: Page, login: string): Promise<void> {
-  const de = (await page.evaluate(() => document.documentElement.lang)) === 'de';
+  const de = await german(page);
   const shell = de ? deShell : enShell;
   const browse = de ? deBrowse : enBrowse;
   const search = page.getByRole('combobox', { name: shell.search.label, exact: true });
@@ -47,8 +120,8 @@ export async function playFromSearch(page: Page, login: string): Promise<void> {
   } else {
     await search.fill(`twitch.tv/${login}`);
     await page.getByRole('option', { name: shell.search.linkChannel.replace('{{login}}', login) }).click();
-    const front = page.locator('.page-layer:not(.is-covered)');
-    await front.getByRole('button', { name: browse.channel.watchNow }).click({ timeout: 30_000 });
+    await channelShown(page);
+    await front(page).getByRole('button', { name: browse.channel.watchNow, exact: true }).click();
   }
   await playing(page, 2);
 }
@@ -59,8 +132,7 @@ export async function playFromSearch(page: Page, login: string): Promise<void> {
  * person would – up to three times.
  */
 export async function playing(page: Page, seconds: number): Promise<void> {
-  const de = (await page.evaluate(() => document.documentElement.lang)) === 'de';
-  const player = de ? dePlayer : enPlayer;
+  const player = (await german(page)) ? dePlayer : enPlayer;
   const retry = page
     .getByRole('region', { name: player.player })
     .getByRole('button', { name: player.retry, exact: true });

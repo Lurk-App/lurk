@@ -9,11 +9,9 @@ import os from 'node:os';
 import path from 'node:path';
 import dePlayer from '../locales/de/player.json' with { type: 'json' };
 import deSettings from '../locales/de/settings.json' with { type: 'json' };
-import deShell from '../locales/de/shell.json' with { type: 'json' };
 import enPlayer from '../locales/en/player.json' with { type: 'json' };
 import enSettings from '../locales/en/settings.json' with { type: 'json' };
-import enShell from '../locales/en/shell.json' with { type: 'json' };
-import { searchableLiveStreams } from './live';
+import { playFromSearch, searchableLiveStreams } from './live';
 
 const screenshots = path.join('tour', 'out', process.platform);
 const blockedHost = 'lurk-tour-blocked.example';
@@ -23,7 +21,6 @@ let settingsWindow: Page;
 let dataDir: string;
 let player: typeof enPlayer;
 let settingsText: typeof enSettings;
-let shell: typeof enShell;
 let login: string;
 
 test.describe.configure({ mode: 'serial', timeout: 120_000 });
@@ -36,8 +33,10 @@ test.beforeAll(async () => {
   const language = await page.evaluate(() => document.documentElement.lang);
   player = language === 'de' ? dePlayer : enPlayer;
   settingsText = language === 'de' ? deSettings : enSettings;
-  shell = language === 'de' ? deShell : enShell;
-  await page.evaluate(() => window.lurk.settings.update({ player: { muted: true } }));
+  // Not following raids: a raid would replace the player, and with it the shield and its popover,
+  // in the middle of a step (the tour does not test raids). It covers only the raid: if the broadcast
+  // then ends, the step still fails, as for any channel that goes offline mid-tour.
+  await page.evaluate(() => window.lurk.settings.update({ player: { muted: true, followRaids: false } }));
   const [top] = await searchableLiveStreams(page);
   login = top!.broadcaster.login;
   // The tour answers the system's confirmation itself (Playwright cannot click it).
@@ -127,18 +126,10 @@ test('a request to a filtered server is blocked, counted and logged; reset clear
 });
 
 test('the shield opens its popover; Esc closes it; the link opens the tab', async () => {
-  const search = page.getByRole('combobox', { name: shell.search.label, exact: true });
-  await search.fill(login);
-  const live = page.getByRole('option').filter({ hasText: shell.search.live }).first();
-  await expect(live).toBeVisible({ timeout: 30_000 });
-  await live.click();
-  await expect
-    .poll(
-      () =>
-        page.locator('video.stage-video:not(.stage-clip)').evaluate((element: HTMLVideoElement) => element.currentTime),
-      { timeout: 60_000 },
-    )
-    .toBeGreaterThan(2);
+  // The search may answer without the channel, and the player may meet "service error" (CI,
+  // 2026-11-24): the twitch.tv link and "Erneut versuchen" ask again, which takes longer.
+  test.setTimeout(180_000);
+  await playFromSearch(page, login);
   await page.getByRole('region', { name: player.player }).hover();
   const shield = page.getByRole('button', { name: player.blocker.name, exact: true });
   await expect(shield).toBeVisible();
