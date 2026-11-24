@@ -190,7 +190,8 @@ test.beforeAll(async () => {
   const language = await page.evaluate(() => document.documentElement.lang);
   player = language === 'de' ? dePlayer : enPlayer;
   settingsText = language === 'de' ? deSettings : enSettings;
-  await page.evaluate(() => window.lurk.settings.update({ player: { muted: true } }));
+  // A raid would replace the player mid-tour; raids are not what this tour checks.
+  await page.evaluate(() => window.lurk.settings.update({ player: { muted: true, followRaids: false } }));
 
   await app.evaluate(({ net, session }) => {
     const state: TourAds = {

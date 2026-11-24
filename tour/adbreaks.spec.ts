@@ -68,7 +68,8 @@ test.beforeAll(async () => {
   await expect(page.getByRole('navigation')).toBeVisible();
   const language = await page.evaluate(() => document.documentElement.lang);
   player = language === 'de' ? dePlayer : enPlayer;
-  await page.evaluate(() => window.lurk.settings.update({ player: { muted: true } }));
+  // A raid would replace the player mid-tour; raids are not what this tour checks.
+  await page.evaluate(() => window.lurk.settings.update({ player: { muted: true, followRaids: false } }));
   const [top] = await searchableLiveStreams(page);
   login = top!.broadcaster.login;
 
