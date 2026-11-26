@@ -48,13 +48,25 @@ const ads = () => app.evaluate(() => (globalThis as unknown as { tourAds: TourAd
  */
 const adLeadMs = 20_000;
 
+/**
+ * A planned break starts adLeadMs back, so the next one is planned only once that point lies past the
+ * previous break's end. Lurk then sees one break end and the next begin, as with Twitch's own
+ * breaks, and does not take both as one (its "Zurück", its count), while every session's edge still
+ * has the ad at once.
+ */
+async function afterPreviousBreak(): Promise<void> {
+  const wait = (await ads()).end + 2_000 + adLeadMs - Date.now();
+  if (wait > 0) await page.waitForTimeout(wait);
+}
+
 /** An ad at the live edge, for `seconds` from now. */
 async function planAd(sessions: TourAds['sessions'], seconds: number): Promise<void> {
   await app.evaluate(
     (_electron, { sessions: which, length, lead }) => {
       const state = (globalThis as unknown as { tourAds: TourAds }).tourAds;
       state.sessions = which;
-      state.start = Date.now() - lead;
+      // afterPreviousBreak() keeps the breaks apart; this floor only guards against forgetting it.
+      state.start = Math.max(Date.now() - lead, state.end + 2_000);
       state.end = Date.now() + length * 1000;
     },
     { sessions, length: seconds, lead: adLeadMs },
@@ -124,7 +136,10 @@ test.beforeAll(async () => {
         if (line.startsWith('#EXT-X-MEDIA-SEQUENCE:')) {
           const at = new Date(state.start).toISOString();
           const seconds = (state.end - state.start) / 1000;
-          out.push(`#EXT-X-DATERANGE:ID="tour-ad",CLASS="twitch-stitched-ad",START-DATE="${at}",DURATION=${seconds}`);
+          // Its own id per break, as Twitch's markers have; the start gap is what keeps breaks apart.
+          out.push(
+            `#EXT-X-DATERANGE:ID="tour-ad-${state.start}",CLASS="twitch-stitched-ad",START-DATE="${at}",DURATION=${seconds}`,
+          );
         }
       }
       return new Response(out.join('\n'), { status: 200, headers });
@@ -150,6 +165,7 @@ const banners = () => page.locator('.banners');
  * break into itself (and Lurk rightly counts it once).
  */
 async function twitchAdsOver(): Promise<void> {
+  await afterPreviousBreak();
   await expect
     .poll(
       async () => {
@@ -220,6 +236,7 @@ test('a mid-roll is hidden once it is reached, a clip plays, then the stream goe
   // gives no clip, the dimmed preview stays for that break (as on macOS, CI 2026-11-24); a second
   // break asks again.
   for (let attempt = 1; attempt <= 2; attempt++) {
+    if (attempt > 1) await twitchAdsOver();
     await planAd('all', 45);
     await expect(banners()).toContainText(player.midrollTitle, { timeout: 30_000 });
     const shown = await clip

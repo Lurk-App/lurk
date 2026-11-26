@@ -6,7 +6,15 @@ All notable changes to Lurk are listed here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- The rows in "Live aus deinen Abos" did nothing: a click, and "Ansehen", "Kanal öffnen" and
+  "Kategorie „…“ öffnen" in their menu, now open the player, the channel and the category again.
+
 ## [0.1.0] - 2026-11-24
+
+Tagged but never released: the first public preview will be 0.9.0, with everything the macOS app
+does.
 
 ### Added
 

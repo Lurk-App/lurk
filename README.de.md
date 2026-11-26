@@ -5,9 +5,10 @@ Twitch schauen ohne Konto und ohne Tracking – auf macOS, Windows und Linux.
 [English](README.md)
 
 > **Stand: frühe Entwicklung.** Dieses Repository ist die Neufassung von Lurk für alle drei
-> Systeme. Version 0.1, die erste Vorschau, entsteht gerade: Twitch entdecken, der Player mit
-> Chat, Abos, Verlauf und der Werbeblocker. Sie ist noch nicht für den Alltag gedacht. Bis
-> Version 1.0 bleibt die native Mac-App die aktuelle Fassung.
+> Systeme. Version 0.9, die erste Vorschau, entsteht gerade: alles, was die native Mac-App kann –
+> Twitch, Kick und YouTube, Replay und Clips, Multiview – für macOS, Windows und Linux. Sie ist
+> noch nicht für den Alltag gedacht. Bis Version 1.0 bleibt die native Mac-App die aktuelle
+> Fassung.
 
 Lurk ist ein unabhängiges, inoffizielles Projekt. Es gehört nicht zu Twitch, Kick oder YouTube
 und wird von ihnen nicht unterstützt.

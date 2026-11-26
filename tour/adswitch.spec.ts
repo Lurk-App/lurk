@@ -28,6 +28,8 @@ let favourite: { id: string; login: string; displayName: string };
 let other: { id: string; login: string; displayName: string };
 /** The rest of the top list, for a favourite whose stream ends. */
 let spares: BrowseStream[] = [];
+/** The channel the player shows since "Bei B bleiben". */
+let stayedWith: { id: string; login: string; displayName: string };
 
 interface TourAds {
   /** The channel whose sessions get the ad; empty while none is planned. */
@@ -46,6 +48,8 @@ interface TourAds {
   twitchAd: Record<string, boolean>;
   /** Channel → whether its latest playlist was marked as ended. */
   ended: Record<string, boolean>;
+  /** Channel → when one of its playlists last carried Twitch's own ad (ms since epoch). */
+  twitchAdAt: Record<string, number>;
 }
 
 test.describe.configure({ mode: 'serial', timeout: 240_000 });
@@ -59,13 +63,25 @@ const ads = () => app.evaluate(() => (globalThis as unknown as { tourAds: TourAd
  */
 const adLeadMs = 20_000;
 
+/**
+ * A planned break starts adLeadMs back, so the next one is planned only once that point lies past the
+ * previous break's end. Lurk then sees one break end and the next begin, as with Twitch's own
+ * breaks, and does not take both as one (its "Zurück", its count), while every session's edge still
+ * has the ad at once.
+ */
+async function afterPreviousBreak(): Promise<void> {
+  const wait = (await ads()).end + 2_000 + adLeadMs - Date.now();
+  if (wait > 0) await page.waitForTimeout(wait);
+}
+
 /** An ad in every session of `login`, at the live edge for `seconds` from now. */
 async function planAd(login: string, seconds: number): Promise<void> {
   await app.evaluate(
     (_electron, { who, length, lead }) => {
       const state = (globalThis as unknown as { tourAds: TourAds }).tourAds;
       state.login = who;
-      state.start = Date.now() - lead;
+      // afterPreviousBreak() keeps the breaks apart; this floor only guards against forgetting it.
+      state.start = Math.max(Date.now() - lead, state.end + 2_000);
       state.end = Date.now() + length * 1000;
     },
     { who: login, length: seconds, lead: adLeadMs },
@@ -128,6 +144,7 @@ function sessionSeen(login: string): Promise<Seen> {
  */
 async function favouriteClear(): Promise<void> {
   test.setTimeout(test.info().timeout + 120_000);
+  await afterPreviousBreak();
   let seen = 'waiting' as Seen;
   await expect
     .poll(
@@ -204,6 +221,7 @@ test.beforeAll(async () => {
       askedAt: {},
       twitchAd: {},
       ended: {},
+      twitchAdAt: {},
     };
     (globalThis as unknown as { tourAds: TourAds }).tourAds = state;
     const plain = (url: string) => url.split('?')[0]!;
@@ -230,6 +248,7 @@ test.beforeAll(async () => {
           text.includes('CLASS="twitch-stitched-ad"') ||
           text.split('\n').some((line) => line.startsWith('#EXTINF:') && /,\S/.test(line) && !/,live\s*$/.test(line));
         state.ended[owner] = text.includes('#EXT-X-ENDLIST');
+        if (state.twitchAd[owner]) state.twitchAdAt[owner] = Date.now();
       }
       const planned = state.end > Date.now() && owner === state.login;
       if (!planned) return new Response(text, { status: 200, headers });
@@ -245,7 +264,10 @@ test.beforeAll(async () => {
         if (line.startsWith('#EXT-X-MEDIA-SEQUENCE:')) {
           const at = new Date(state.start).toISOString();
           const seconds = (state.end - state.start) / 1000;
-          out.push(`#EXT-X-DATERANGE:ID="tour-ad",CLASS="twitch-stitched-ad",START-DATE="${at}",DURATION=${seconds}`);
+          // Its own id per break, as Twitch's markers have; the start gap is what keeps breaks apart.
+          out.push(
+            `#EXT-X-DATERANGE:ID="tour-ad-${state.start}",CLASS="twitch-stitched-ad",START-DATE="${at}",DURATION=${seconds}`,
+          );
         }
       }
       return new Response(out.join('\n'), { status: 200, headers });
@@ -336,24 +358,40 @@ test('"Zurück" returns at once and stays for the rest of the break', async () =
 
 test('"Bei B bleiben" opens B in the player', async () => {
   await favouriteClear();
+  const plannedAt = Date.now();
   await planAd(primary.login, 40);
-  const stay = banners().getByRole('button', {
-    name: player.detourStay.replace('{{channel}}', favourite.displayName),
-    exact: true,
-  });
+  // B is the channel Lurk shows: favourite, or `other` when Twitch's own ad reached favourite after
+  // the check (CI, 2026-11-26) – then the tour must have seen that ad, or favourite end.
+  const stayFor = (channel: { displayName: string }) => player.detourStay.replace('{{channel}}', channel.displayName);
+  const stay = banners()
+    .getByRole('button', { name: stayFor(favourite), exact: true })
+    .or(banners().getByRole('button', { name: stayFor(other), exact: true }));
   await expect(stay).toBeVisible({ timeout: 45_000 });
-  await stay.click();
+  const b = ((await stay.textContent()) ?? '').trim() === stayFor(favourite) ? favourite : other;
+  if (b === other) {
+    const state = await ads();
+    const reason =
+      (state.twitchAdAt[favourite.login] ?? 0) >= plannedAt - 10_000 ||
+      state.ended[favourite.login] === true ||
+      (await sessionSeen(favourite.login)) !== 'clear';
+    expect(reason, `Lurk showed ${other.displayName} although ${favourite.displayName} was clear`).toBe(true);
+  }
+  stayedWith = b;
+  // The button just read: if Lurk moves on meanwhile, the click must not land on another one.
+  await banners()
+    .getByRole('button', { name: stayFor(b), exact: true })
+    .click();
   // B's player is a new page with its own channel query and session: when Twitch fails one of them,
   // Lurk shows "Erneut versuchen", and playing() presses it (as for the first player, CI 2026-11-24).
   const retry = page
     .getByRole('region', { name: player.player })
     .getByRole('button', { name: player.retry, exact: true });
-  await expect(page.locator('.info-strip').filter({ hasText: favourite.displayName }).or(retry).first()).toBeVisible({
+  await expect(page.locator('.info-strip').filter({ hasText: b.displayName }).or(retry).first()).toBeVisible({
     timeout: 30_000,
   });
   await expect(banners()).not.toContainText(detourPrefix());
   await playing(page, 2);
-  await expect(page.locator('.info-strip')).toContainText(favourite.displayName);
+  await expect(page.locator('.info-strip')).toContainText(b.displayName);
   await adOver();
 });
 
@@ -375,7 +413,8 @@ test('the "…" menu turns the switch off: the break is hidden instead', async (
   await page.getByRole('region', { name: player.player }).hover();
   await page.getByRole('button', { name: player.more }).click();
   await expect.poll(() => page.evaluate(async () => (await window.lurk.settings.get()).player.adSwitch)).toBe(false);
-  await planAd(favourite.login, 30);
+  // The break goes into the channel that plays since "Bei B bleiben".
+  await planAd(stayedWith.login, 30);
   await expect(banners()).toContainText(player.midrollTitle, { timeout: 45_000 });
   await expect(banners()).not.toContainText(detourPrefix());
   await adOver();
@@ -389,8 +428,26 @@ test('"Replay & Werbung" ranks the subscriptions by watch time and resets it', a
   ]);
   await expect(settings.getByRole('switch', { name: settingsText.replay.adSwitch })).toBeChecked();
   const ranking = settings.getByRole('region', { name: settingsText.replay.rankingSection });
-  // The settings window hears watch time as it is counted; the favourite comes first.
-  await expect(ranking.locator('.ranking-row').first()).toContainText(favourite.displayName, { timeout: 45_000 });
+  // The settings window hears watch time as it is counted. Its rows follow the watch time Lurk keeps,
+  // most first, name by name (usually favourite first; `other`, when the tour stayed with it longer).
+  await expect
+    .poll(
+      async () => {
+        const library = await page.evaluate(() => window.lurk.library.get());
+        const seconds = (name: string) => {
+          const entry = library.subscriptions.find((subscription) => subscription.displayName === name);
+          return entry ? (library.watchTime[entry.id] ?? 0) : -1;
+        };
+        const values = (await ranking.locator('.ranking-name').allTextContents()).map((name) => seconds(name.trim()));
+        return (
+          values.length === Math.min(8, library.subscriptions.length) &&
+          values[0]! > 0 &&
+          values.every((value, index) => value >= 0 && (index === 0 || values[index - 1]! >= value))
+        );
+      },
+      { timeout: 45_000 },
+    )
+    .toBe(true);
   await expect(ranking.locator('.ranking-row').first()).toContainText('1.');
   await settings.screenshot({ path: path.join(screenshots, 'settings-replay.png') });
   await settings.getByRole('button', { name: settingsText.replay.reset }).click();
