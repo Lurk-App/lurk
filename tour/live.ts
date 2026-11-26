@@ -110,7 +110,15 @@ export async function playFromSearch(page: Page, login: string): Promise<void> {
   const browse = de ? deBrowse : enBrowse;
   const search = page.getByRole('combobox', { name: shell.search.label, exact: true });
   await search.fill(login);
-  const live = page.getByRole('option').filter({ hasText: shell.search.live }).first();
+  // The channel's own suggestion, not the first live one: the term can match other live channels
+  // too, and one of three viewers once came first (2026-11-26). Its name is the login apart from
+  // case; a display name in another script finds no row here and goes the link's way.
+  const escaped = login.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const live = page
+    .getByRole('option')
+    .filter({ has: page.locator('.suggestion-name', { hasText: new RegExp(`^\\s*${escaped}\\s*$`, 'i') }) })
+    .filter({ has: page.locator('.suggestion-subtitle.is-live') })
+    .first();
   const listed = await live
     .waitFor({ timeout: 20_000 })
     .then(() => true)
